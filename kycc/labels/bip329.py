@@ -3,10 +3,11 @@ BIP-329 wallet label import/export.
 Format: one JSON object per line (.jsonl)
 Spec: https://github.com/bitcoin/bips/blob/master/bip-0329.mediawiki
 """
+
 import json
 import time
-from typing import Iterator
-from kycc.labels.store import Label, LabelStore, RefType
+
+from kycc.labels.store import Label, LabelStore
 
 VALID_TYPES: set[str] = {"tx", "utxo", "addr", "xpub"}
 
@@ -16,8 +17,8 @@ def serialize(store: LabelStore, wallet_id: str = "default") -> str:
     lines = []
     for lbl in store.list(wallet_id=wallet_id):
         entry: dict = {
-            "type":  lbl.ref_type,
-            "ref":   lbl.ref,
+            "type": lbl.ref_type,
+            "ref": lbl.ref,
             "label": lbl.label,
         }
         if lbl.spendable is not None:
@@ -61,16 +62,18 @@ def deserialize(
         spendable = bool(spendable_raw) if spendable_raw is not None else None
 
         now = int(time.time())
-        labels.append(Label(
-            wallet_id  = wallet_id,
-            ref_type   = ref_type,
-            ref        = ref,
-            label      = label_text,
-            origin     = origin,
-            spendable  = spendable,
-            created_at = now,
-            updated_at = now,
-        ))
+        labels.append(
+            Label(
+                wallet_id=wallet_id,
+                ref_type=ref_type,
+                ref=ref,
+                label=label_text,
+                origin=origin,
+                spendable=spendable,
+                created_at=now,
+                updated_at=now,
+            )
+        )
     return labels
 
 

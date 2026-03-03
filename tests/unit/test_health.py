@@ -1,5 +1,6 @@
 from kycc.server import create_app
 
+
 def test_health_endpoint():
     app = create_app()
     client = app.test_client()

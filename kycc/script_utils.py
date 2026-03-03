@@ -1,5 +1,6 @@
 from kycc.graph.models import ScriptType
 
+
 def classify_script(script_pubkey_hex: str) -> ScriptType:
     s = script_pubkey_hex.lower()
 

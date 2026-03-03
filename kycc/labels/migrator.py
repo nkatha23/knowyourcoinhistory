@@ -42,15 +42,13 @@ def migrate(db_path: str) -> None:
     conn = sqlite3.connect(db_path)
     try:
         conn.executescript(MIGRATIONS[0])
-        current = conn.execute(
-            "SELECT MAX(version) FROM schema_meta"
-        ).fetchone()[0] or 0
+        current = (
+            conn.execute("SELECT MAX(version) FROM schema_meta").fetchone()[0] or 0
+        )
 
         for i, sql in enumerate(MIGRATIONS[current:], start=current + 1):
             conn.executescript(sql)
-            conn.execute(
-                "INSERT OR REPLACE INTO schema_meta(version) VALUES(?)", (i,)
-            )
+            conn.execute("INSERT OR REPLACE INTO schema_meta(version) VALUES(?)", (i,))
         conn.commit()
     finally:
         conn.close()
