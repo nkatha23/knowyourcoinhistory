@@ -103,6 +103,17 @@ class LabelStore:
                 ).fetchall()
         return [_row_to_label(r) for r in rows]
 
+    def list_wallets(self) -> list[str]:
+        """Return distinct wallet_ids that have labels, always including 'default'."""
+        with self._conn() as conn:
+            rows = conn.execute(
+                "SELECT DISTINCT wallet_id FROM labels ORDER BY wallet_id"
+            ).fetchall()
+        wallets = [r["wallet_id"] for r in rows]
+        if "default" not in wallets:
+            wallets.insert(0, "default")
+        return wallets
+
     def hydrate_tx(self, txid: str, wallet_id: str = "default") -> Optional[str]:
         """Return label text for a txid, or None."""
         result = self.get("tx", txid, wallet_id)

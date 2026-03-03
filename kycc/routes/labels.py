@@ -21,6 +21,12 @@ def list_labels():
     )
 
 
+@bp.get("/api/wallets")
+def list_wallets():
+    store = current_app.config["LABEL_STORE"]
+    return jsonify({"ok": True, "wallets": store.list_wallets()})
+
+
 @bp.post("/api/label")
 def upsert_label():
     store = current_app.config["LABEL_STORE"]

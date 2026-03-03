@@ -1,68 +1,112 @@
+@import "tailwindcss";
+
+/* ── Class-based dark mode ─────────────────────────────────────── */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Custom theme tokens ───────────────────────────────────────── */
+@theme {
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-btc: #f7931a;
+  --color-btc-dim: #f7931a33;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+  --color-danger: #ef4444;
+}
+
+/* ── CSS custom properties: light mode ────────────────────────── */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
+  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+
+  --bg: #ffffff;
+  --bg-subtle: #f3f4f6;
+  --canvas: #f9fafb;
+  --fg: #1a1a1a;
+  --fg-muted: #6b7280;
+  --border: #d9dee5;
+  --node-bg: #ffffff;
+  --node-border: #d9dee5;
+  --node-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08);
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* ── CSS custom properties: dark mode ─────────────────────────── */
+.dark {
+  color-scheme: dark;
+
+  --bg: #111827;
+  --bg-subtle: #1f2937;
+  --canvas: #0f172a;
+  --fg: #f9fafb;
+  --fg-muted: #9ca3af;
+  --border: #374151;
+  --node-bg: #1f2937;
+  --node-border: #374151;
+  --node-shadow: 0 1px 4px 0 rgb(0 0 0 / 0.4);
 }
 
-body {
+/* ── Base resets ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--fg);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+
+/* ── Keyframe animations ───────────────────────────────────────── */
+@keyframes coin-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.08); opacity: 0.75; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+.animate-coin-pulse { animation: coin-pulse 2s ease-in-out infinite; }
+.animate-fade-up    { animation: fade-up 0.2s ease forwards; }
+.animate-spin-slow  { animation: spin-slow 1.2s linear infinite; }
+
+/* ── React Flow overrides ──────────────────────────────────────── */
+.react-flow__background { background: var(--canvas) !important; }
+.react-flow__minimap   { background: var(--bg-subtle) !important; border: 1px solid var(--border); border-radius: 8px; }
+.react-flow__controls  { background: var(--bg) !important; border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--node-shadow); }
+.react-flow__controls button {
+  background: var(--bg) !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--fg) !important;
 }
-button:hover {
-  border-color: #646cff;
+.react-flow__controls button:last-child { border-bottom: none !important; }
+.react-flow__controls button:hover { background: var(--bg-subtle) !important; }
+.react-flow__edge-path { stroke: #9ca3af !important; }
+.dark .react-flow__edge-path { stroke: #4b5563 !important; }
+
+/* Animated edges */
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 6 4;
+  animation: dash-flow 1.2s linear infinite;
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+@keyframes dash-flow {
+  from { stroke-dashoffset: 24; }
+  to   { stroke-dashoffset: 0; }
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
+/* ── Sonner toast overrides ────────────────────────────────────── */
+[data-sonner-toaster] { font-family: var(--font-sans) !important; }

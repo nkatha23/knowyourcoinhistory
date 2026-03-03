@@ -52,17 +52,31 @@ MOCK_RAW_TX = {
 
 
 def _make_test_app():
+    from dataclasses import dataclass
+
+    @dataclass
+    class _FakeCfg:
+        node_type: str = "bitcoincore"
+        node_host: str = "127.0.0.1"
+        node_port: int = 8332
+        node_network: str = "regtest"
+
     app = Flask(__name__)
     app.config["TESTING"] = True
 
     mock_adapter = MagicMock()
     mock_adapter.get_raw_transaction.return_value = MOCK_RAW_TX
+    mock_adapter.get_block_height.return_value = 100
 
     app.config["NODE_ADAPTER"] = mock_adapter
     app.config["LABEL_STORE"] = LabelStore(tempfile.mktemp(suffix=".db"))
     app.config["FINGERPRINT_ENGINE"] = FingerprintEngine()
+    app.config["KYCC_CONFIG"] = _FakeCfg()
+    app.config["ENABLED_HEURISTICS"] = []
 
-    for bp in [health_bp, tx_bp, labels_bp, export_bp, session_bp]:
+    from kycc.routes.address import bp as address_bp
+
+    for bp in [health_bp, tx_bp, labels_bp, export_bp, session_bp, address_bp]:
         app.register_blueprint(bp)
     return app
 
