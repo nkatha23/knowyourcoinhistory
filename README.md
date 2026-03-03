@@ -41,8 +41,8 @@ Full architecture and engineering spec: [`docs/`](./docs/)
 | Node connectivity | python-bitcoinrpc, python-bitcoinlib |
 | Frontend | React 18, TypeScript, Vite |
 | Graph UI | @xyflow/react (React Flow) |
-| State | Zustand, TanStack Query |
-| Styling | Tailwind CSS v4, Radix UI |
+| State | Zustand |
+| Styling | Tailwind CSS v4, framer-motion |
 | Testing | pytest, pytest-cov |
 | Linting | black, ruff, mypy |
 
@@ -74,7 +74,7 @@ pip install flask python-bitcoinrpc python-bitcoinlib pytest pytest-cov black ru
 
 ### 3. Configure your node connection
 ```bash
-cp kycc.toml.example kycc.toml   # coming soon — edit kycc.toml directly for now
+cp kycc.toml.example kycc.toml
 ```
 
 Edit `kycc.toml`:
@@ -110,9 +110,21 @@ curl http://127.0.0.1:5050/api/health
 ---
 
 ## Running Tests
+
+**Unit tests** (no node required):
 ```bash
-make test
-# or: pytest tests/ -v --cov=kycc
+pytest tests/unit/ -v --cov=kycc
+```
+
+**Integration tests** (requires regtest node — see [docs/REGTEST_SETUP.md](./docs/REGTEST_SETUP.md)):
+```bash
+docker compose -f docker-compose.regtest.yml up -d
+pytest tests/integration/ -v
+```
+
+**All tests:**
+```bash
+pytest tests/ -v --cov=kycc
 ```
 
 ---
@@ -141,9 +153,9 @@ kycc/               Python package
 tests/              pytest unit + integration tests
 web/                React SPA (Vite + TypeScript)
   src/
-    components/     Graph, Labels, Fingerprint, Session UI
-    api/            TanStack Query hooks
-    store/          Zustand session state
+    components/     Graph, Toolbar, RightPanel, SettingsModal
+    api/            Fetch-based API client
+    store/          Zustand graph + session state
     types/          Shared TypeScript interfaces
 docs/               Architecture, heuristics, setup guides
 ```
@@ -168,12 +180,13 @@ docs/               Architecture, heuristics, setup guides
 ## Roadmap
 
 - [x] Repo structure and Flask skeleton
-- [ ] Phase 0 — Bitcoin Core RPC adapter + TxParser
-- [ ] Phase 1 — Label store + BIP-329 import/export
-- [ ] Phase 2 — React Flow interactive graph UI
-- [ ] Phase 3 — Fingerprinting heuristic engine
-- [ ] Phase 4 — Electrum adapter + multi-wallet sessions
-- [ ] Phase 5 — Signet public demo
+- [x] Phase 0 — Bitcoin Core RPC adapter + TxParser
+- [x] Phase 1 — Label store + BIP-329 import/export
+- [x] Phase 2 — Fingerprinting heuristic engine (8 detectors, 92 tests)
+- [x] Phase 3 — Flask API routes + serializer
+- [x] Phase 4 — Electrum adapter + multi-wallet sessions
+- [x] Phase 5 — React + React Flow interactive graph UI
+- [ ] Phase 6 — Signet public demo
 
 ---
 

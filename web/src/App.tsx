@@ -1,35 +1,51 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import { Toaster } from 'sonner';
+import './App.css';
+import Toolbar from './components/Toolbar';
+import GraphCanvas from './components/Graph/GraphCanvas';
+import RightPanel from './components/RightPanel';
+import SettingsModal from './components/SettingsModal';
+import { useGraphStore } from './store/graph';
+import { fetchHealth, fetchSessions } from './api/client';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const setBackendOnline = useGraphStore((s) => s.setBackendOnline);
+  const setRecentSessions = useGraphStore((s) => s.setRecentSessions);
+  const theme = useGraphStore((s) => s.theme);
+
+  // Probe backend on mount and load recent sessions
+  useEffect(() => {
+    fetchHealth()
+      .then(() => {
+        setBackendOnline(true);
+        return fetchSessions();
+      })
+      .then((r) => setRecentSessions(r.sessions))
+      .catch(() => setBackendOnline(false));
+  }, [setBackendOnline, setRecentSessions]);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="flex flex-col h-full w-full overflow-hidden">
+      <Toolbar onOpenSettings={() => setSettingsOpen(true)} />
 
-export default App
+      <div className="relative flex-1 overflow-hidden">
+        <GraphCanvas />
+        <RightPanel />
+      </div>
+
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      <Toaster
+        position="bottom-left"
+        theme={theme}
+        toastOptions={{
+          style: {
+            fontFamily: 'IBM Plex Sans, system-ui, sans-serif',
+            fontSize: '13px',
+          },
+        }}
+      />
+    </div>
+  );
+}

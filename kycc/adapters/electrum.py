@@ -65,7 +65,30 @@ class ElectrumAdapter(NodeAdapter):
         result = self._call("blockchain.transaction.get", [txid, True])
         if not isinstance(result, dict):
             raise ValueError(f"Unexpected response for txid {txid}: {result}")
+        # Electrum verbose=True omits prevout data that Bitcoin Core verbose=2 includes.
+        # Resolve each input's prevout with a second call so value_sats, script_type,
+        # and address are populated — required for fee calculation and all heuristics.
+        self._resolve_prevouts(result)
         return result
+
+    def _resolve_prevouts(self, tx: dict[str, Any]) -> None:
+        """Fetch and inject prevout data for every non-coinbase input."""
+        for vin in tx.get("vin", []):
+            if "coinbase" in vin:
+                continue
+            prev_txid: str | None = vin.get("txid")
+            vout_index: int | None = vin.get("vout")
+            if prev_txid is None or vout_index is None:
+                continue
+            try:
+                prev_tx = self._call("blockchain.transaction.get", [prev_txid, True])
+                if isinstance(prev_tx, dict):
+                    vouts: list = prev_tx.get("vout", [])
+                    if vout_index < len(vouts):
+                        vin["prevout"] = vouts[vout_index]
+            except Exception:
+                # Leave prevout absent; parser will treat it as unknown/zero
+                pass
 
     def get_block_height(self) -> int:
         result = self._call("blockchain.headers.subscribe", [])
