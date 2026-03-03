@@ -2,10 +2,12 @@
 FingerprintEngine: runs configured heuristic detectors against a TxNode
 and returns the list of HeuristicResult annotations.
 """
+
 from typing import Callable, Optional
-from kycc.graph.models import TxNode
-from kycc.fingerprint.models import HeuristicResult
+
 from kycc.fingerprint import heuristics as H
+from kycc.fingerprint.models import HeuristicResult
+from kycc.graph.models import TxNode
 
 # Default detector registry — order matters for display
 DEFAULT_DETECTORS: list[Callable[[TxNode], Optional[HeuristicResult]]] = [
@@ -21,14 +23,14 @@ DEFAULT_DETECTORS: list[Callable[[TxNode], Optional[HeuristicResult]]] = [
 
 # Map config string → detector function
 DETECTOR_MAP: dict[str, Callable[[TxNode], Optional[HeuristicResult]]] = {
-    "rbf":              H.detect_rbf,
-    "locktime":         H.detect_locktime,
-    "address_reuse":    H.detect_address_reuse,
-    "round_payment":    H.detect_round_payment,
+    "rbf": H.detect_rbf,
+    "locktime": H.detect_locktime,
+    "address_reuse": H.detect_address_reuse,
+    "round_payment": H.detect_round_payment,
     "change_inference": H.detect_change_output,
-    "script_mismatch":  H.detect_script_mismatch,
-    "consolidation":    H.detect_consolidation,
-    "uioh":             H.detect_uioh,
+    "script_mismatch": H.detect_script_mismatch,
+    "consolidation": H.detect_consolidation,
+    "uioh": H.detect_uioh,
 }
 
 
@@ -41,9 +43,7 @@ class FingerprintEngine:
         if enabled is None:
             self._detectors = DEFAULT_DETECTORS
         else:
-            self._detectors = [
-                DETECTOR_MAP[k] for k in enabled if k in DETECTOR_MAP
-            ]
+            self._detectors = [DETECTOR_MAP[k] for k in enabled if k in DETECTOR_MAP]
 
     def annotate(self, tx: TxNode) -> list[HeuristicResult]:
         """Run all enabled detectors. Returns list of triggered results."""
@@ -57,13 +57,14 @@ class FingerprintEngine:
     def annotate_inplace(self, tx: TxNode) -> TxNode:
         """Annotate and attach results directly to tx.annotations."""
         from kycc.graph.models import HeuristicResult as GHR
+
         raw = self.annotate(tx)
         tx.annotations = [
             GHR(
-                code        = r.code,
-                severity    = r.severity,
-                description = r.description,
-                affected    = r.affected,
+                code=r.code,
+                severity=r.severity,
+                description=r.description,
+                affected=r.affected,
             )
             for r in raw
         ]

@@ -2,19 +2,19 @@ import hashlib
 import json
 import socket
 import ssl
-import time
 from typing import Any
+
 from kycc.adapters.base import NodeAdapter
 
 
 class ElectrumAdapter(NodeAdapter):
     def __init__(self, host: str, port: int, use_ssl: bool = True, timeout: int = 10):
-        self._host    = host
-        self._port    = port
+        self._host = host
+        self._port = port
         self._use_ssl = use_ssl
         self._timeout = timeout
-        self._sock    = None
-        self._id      = 0
+        self._sock = None
+        self._id = 0
         self._connect()
 
     def _connect(self) -> None:
@@ -22,7 +22,7 @@ class ElectrumAdapter(NodeAdapter):
         if self._use_ssl:
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
-            ctx.verify_mode    = ssl.CERT_NONE
+            ctx.verify_mode = ssl.CERT_NONE
             self._sock = ctx.wrap_socket(raw, server_hostname=self._host)
         else:
             self._sock = raw
@@ -36,9 +36,9 @@ class ElectrumAdapter(NodeAdapter):
 
     def _call(self, method: str, params: list) -> Any:
         self._id += 1
-        payload = json.dumps({
-            "id": self._id, "method": method, "params": params
-        }) + "\n"
+        payload = (
+            json.dumps({"id": self._id, "method": method, "params": params}) + "\n"
+        )
         try:
             self._sock.sendall(payload.encode())
             return self._read_response()

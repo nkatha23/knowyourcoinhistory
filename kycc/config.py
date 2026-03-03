@@ -1,6 +1,6 @@
 import tomllib
-from pathlib import Path
 from dataclasses import dataclass
+
 
 @dataclass
 class Config:
@@ -15,6 +15,7 @@ class Config:
     server_port: int
     server_debug: bool
     db_path: str
+
 
 def load_config(path: str = "kycc.toml") -> Config:
     with open(path, "rb") as f:
