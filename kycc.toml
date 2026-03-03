@@ -1,0 +1,24 @@
+[node]
+type        = "bitcoincore"
+host        = "127.0.0.1"
+port        = 8332
+user        = "rpc_user"
+password    = "rpc_pass"
+cookie_file = ""
+network     = "regtest"
+
+[server]
+host  = "127.0.0.1"
+port  = 5050
+debug = true
+
+[privacy]
+tor_proxy = ""
+
+[fingerprint]
+enabled    = true
+heuristics = ["uioh","address_reuse","round_payment","change_inference",
+               "script_mismatch","rbf","locktime","consolidation"]
+
+[db]
+path = ".kycc/labels.db"

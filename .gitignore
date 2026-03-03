@@ -1,0 +1,31 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Database
+.kycc/
+*.db
+
+# Node
+web/node_modules/
+web/dist/
+
+# Env / secrets
+.env
+.cookie
+*.cookie
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
