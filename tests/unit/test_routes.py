@@ -1,12 +1,13 @@
 """
 Route tests use a mock adapter so no real Bitcoin node is needed.
 """
+
 import json
 import tempfile
+from unittest.mock import MagicMock
 
 import pytest
 from flask import Flask
-from unittest.mock import MagicMock
 
 from kycc.fingerprint.engine import FingerprintEngine
 from kycc.labels.store import LabelStore
@@ -181,9 +182,7 @@ def test_delete_label(client):
         "/api/label",
         json={"ref_type": "tx", "ref": "a" * 64, "label": "to delete"},
     )
-    res = client.delete(
-        "/api/label", json={"ref_type": "tx", "ref": "a" * 64}
-    )
+    res = client.delete("/api/label", json={"ref_type": "tx", "ref": "a" * 64})
     assert res.status_code == 200
     assert res.get_json()["ok"] is True
 

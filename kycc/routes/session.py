@@ -32,7 +32,8 @@ def create_session():
 
     with store._conn() as conn:
         conn.execute(
-            "INSERT INTO sessions (session_id, wallet_ids, root_txid, created_at) VALUES (?,?,?,?)",
+            "INSERT INTO sessions (session_id, wallet_ids, root_txid, created_at)"
+            " VALUES (?,?,?,?)",
             (session_id, json.dumps(wallet_ids), root_txid, int(time.time())),
         )
 
