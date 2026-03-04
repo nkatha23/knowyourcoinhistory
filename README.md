@@ -39,10 +39,10 @@ Full architecture and engineering spec: [`docs/`](./docs/)
 |---|---|
 | Backend | Python 3.11+, Flask 3.x, SQLite3 |
 | Node connectivity | python-bitcoinrpc, python-bitcoinlib |
-| Frontend | React 18, TypeScript, Vite |
-| Graph UI | @xyflow/react (React Flow) |
+| Frontend | React 19, TypeScript, Vite 7 |
+| Graph UI | @xyflow/react v12 (React Flow) |
 | State | Zustand |
-| Styling | Tailwind CSS v4, framer-motion |
+| Styling | Tailwind CSS v4, framer-motion, Sonner |
 | Testing | pytest, pytest-cov |
 | Linting | black, ruff, mypy |
 
@@ -144,20 +144,31 @@ Compatible with Sparrow Wallet, Electrum 4.x, and Bitcoin Core 27+.
 
 ## Project Structure
 ```
-kycc/               Python package
-  adapters/         NodeAdapter ABC + Bitcoin Core / Electrum implementations
-  graph/            Transaction graph resolver, parser, dataclasses
-  labels/           SQLite label store + BIP-329 serializer
-  fingerprint/      Wallet heuristic detection engine
-  routes/           Flask API blueprints
-tests/              pytest unit + integration tests
-web/                React SPA (Vite + TypeScript)
+kycc/                    Python package
+  adapters/              NodeAdapter ABC + Bitcoin Core / Electrum implementations
+  graph/                 Transaction graph resolver, parser, dataclasses
+  labels/                SQLite label store + BIP-329 serializer
+  fingerprint/           Wallet heuristic detection engine
+  routes/                Flask API blueprints
+tests/                   pytest unit + integration tests
+web/                     React SPA (Vite 7 + TypeScript)
   src/
-    components/     Graph, Toolbar, RightPanel, SettingsModal
-    api/            Fetch-based API client
-    store/          Zustand graph + session state
-    types/          Shared TypeScript interfaces
-docs/               Architecture, heuristics, setup guides
+    components/
+      Graph/
+        GraphCanvas.tsx        React Flow container
+        EmptyState.tsx         Hero landing page with search + info cards
+        FloatingSearch.tsx     Compact pill search overlay (shown when graph loaded)
+        TransactionNode.tsx    TX graph node (280px, orange top border)
+        UTXONode.tsx           UTXO pill node (200px, green/gold borders)
+      Toolbar.tsx              Logo, wallet selector, fingerprint toggle, import/export
+      RightPanel.tsx           Label editor + fingerprint annotation panel
+      SettingsModal.tsx        Node status + heuristic toggles
+    api/                 Typed fetch wrappers for all /api/* routes
+    store/               Zustand graph + session state + edge layout
+    types/               Shared TypeScript interfaces
+docs/                    Architecture, heuristics, setup guides
+docker-compose.regtest.yml  Bitcoin Core v28 regtest node
+.github/workflows/ci.yml    ruff + black + pytest (Python 3.11 & 3.12)
 ```
 
 ---
@@ -182,10 +193,12 @@ docs/               Architecture, heuristics, setup guides
 - [x] Repo structure and Flask skeleton
 - [x] Phase 0 — Bitcoin Core RPC adapter + TxParser
 - [x] Phase 1 — Label store + BIP-329 import/export
-- [x] Phase 2 — Fingerprinting heuristic engine (8 detectors, 92 tests)
+- [x] Phase 2 — Fingerprinting heuristic engine (8 detectors, 89 tests)
 - [x] Phase 3 — Flask API routes + serializer
 - [x] Phase 4 — Electrum adapter + multi-wallet sessions
 - [x] Phase 5 — React + React Flow interactive graph UI
+- [x] Phase 5+ — Frontend redesign: hero landing page, floating search, node typography, edge value labels
+- [x] Bug fixes — BitcoinCoreAdapter stale connection (`CannotSendRequest`), `decimal.Decimal` × float TypeError in parser
 - [ ] Phase 6 — Signet public demo
 
 ---
