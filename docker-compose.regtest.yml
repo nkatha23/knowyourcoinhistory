@@ -1,4 +1,3 @@
-version: "3.9"
 
 # Bitcoin Core regtest node for integration testing.
 # Usage:

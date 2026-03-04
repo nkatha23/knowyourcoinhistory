@@ -1,0 +1,76 @@
+[
+  {
+    "address": "bcrt1q8ttclurc33edpzfh2r5udk96xj46urtea0nd8x",
+    "parent_descs": [
+      "wpkh(tpubD6NzVbkrYhZ4Wcu1PFxXQGmkQNzVJnQdQVchT8HsJUJdiupBKMeDuVcAxJGXoGK7s8c8XFS2pW3GPU8CsM4PR836kYNSfbGTbhKo1RnBU6K/84h/1h/0h/0/*)#jngfsw65"
+    ],
+    "category": "receive",
+    "amount": 1.00000000,
+    "label": "",
+    "vout": 0,
+    "abandoned": false,
+    "confirmations": 1,
+    "blockhash": "2942f8822fe52e3a19ad749d159eb243ca213ffde9932dc68ba2e078f488f134",
+    "blockheight": 102,
+    "blockindex": 1,
+    "blocktime": 1772626350,
+    "txid": "33e4810a30a72b88a44a0f606edb6034b589f92aae9c2c60ba759e122ac1fb56",
+    "wtxid": "ee824c6406bfd92fab0ac61119a904e3fbaa22e3c7e36d521f7adba39ec92b15",
+    "walletconflicts": [
+    ],
+    "mempoolconflicts": [
+    ],
+    "time": 1772626121,
+    "timereceived": 1772626121,
+    "bip125-replaceable": "no"
+  },
+  {
+    "address": "bcrt1q8ttclurc33edpzfh2r5udk96xj46urtea0nd8x",
+    "category": "send",
+    "amount": -1.00000000,
+    "label": "",
+    "vout": 0,
+    "fee": -0.00001410,
+    "confirmations": 1,
+    "blockhash": "2942f8822fe52e3a19ad749d159eb243ca213ffde9932dc68ba2e078f488f134",
+    "blockheight": 102,
+    "blockindex": 1,
+    "blocktime": 1772626350,
+    "txid": "33e4810a30a72b88a44a0f606edb6034b589f92aae9c2c60ba759e122ac1fb56",
+    "wtxid": "ee824c6406bfd92fab0ac61119a904e3fbaa22e3c7e36d521f7adba39ec92b15",
+    "walletconflicts": [
+    ],
+    "mempoolconflicts": [
+    ],
+    "time": 1772626121,
+    "timereceived": 1772626121,
+    "bip125-replaceable": "no",
+    "abandoned": false
+  },
+  {
+    "address": "bcrt1q8ttclurc33edpzfh2r5udk96xj46urtea0nd8x",
+    "parent_descs": [
+      "wpkh(tpubD6NzVbkrYhZ4Wcu1PFxXQGmkQNzVJnQdQVchT8HsJUJdiupBKMeDuVcAxJGXoGK7s8c8XFS2pW3GPU8CsM4PR836kYNSfbGTbhKo1RnBU6K/84h/1h/0h/0/*)#jngfsw65"
+    ],
+    "category": "immature",
+    "amount": 50.00001410,
+    "label": "",
+    "vout": 0,
+    "abandoned": false,
+    "confirmations": 1,
+    "generated": true,
+    "blockhash": "2942f8822fe52e3a19ad749d159eb243ca213ffde9932dc68ba2e078f488f134",
+    "blockheight": 102,
+    "blockindex": 0,
+    "blocktime": 1772626350,
+    "txid": "3ae0ccc933faf2fd93bc93e4adb1227c3f35c9db371e2ac7b4be552142697567",
+    "wtxid": "f2400a6bf82a2f207b26994da0f17c5fdda6e2725add7d832d1a98e38bda632e",
+    "walletconflicts": [
+    ],
+    "mempoolconflicts": [
+    ],
+    "time": 1772626350,
+    "timereceived": 1772626350,
+    "bip125-replaceable": "no"
+  }
+]

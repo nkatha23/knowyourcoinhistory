@@ -1,9 +1,9 @@
 [node]
 type        = "bitcoincore"
 host        = "127.0.0.1"
-port        = 8332
-user        = "rpc_user"
-password    = "rpc_pass"
+port        = 18443
+user        = "kycc"
+password    = "kyccpass"
 cookie_file = ""
 network     = "regtest"
 

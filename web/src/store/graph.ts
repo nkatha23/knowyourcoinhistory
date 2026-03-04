@@ -44,6 +44,12 @@ if (storedTheme === 'dark') document.documentElement.classList.add('dark');
 function utxoNodeId(txid: string, vout: number) { return `utxo-${txid}-${vout}`; }
 function txNodeId(txid: string) { return `tx-${txid}`; }
 
+function fmtEdgeSats(sats: number): string {
+  if (sats === 0) return '';
+  if (sats >= 1_000_000) return `${(sats / 1e8).toFixed(4)} BTC`;
+  return `${sats.toLocaleString()} sats`;
+}
+
 function centerY(count: number, index: number, cy: number): number {
   const total = (count - 1) * ROW_GAP;
   return cy - total / 2 + index * ROW_GAP;
@@ -76,7 +82,22 @@ function buildNodes(
       data: { kind: 'utxo', ...u, isInput: true, canExpand: !isCoinbase && !loadedTxIds.has(u.txid) } as UTXONodeData,
       draggable: true,
     });
-    edges.push({ id: `e-${uid}-${txId}`, source: uid, target: txId, animated: true, type: 'smoothstep' });
+    const edgeLabel = !isCoinbase ? fmtEdgeSats(u.value_sats) : '';
+    edges.push({
+      id: `e-${uid}-${txId}`,
+      source: uid,
+      target: txId,
+      animated: true,
+      type: 'smoothstep',
+      style: { stroke: '#D1D5DB', strokeWidth: 1.5 },
+      ...(edgeLabel ? {
+        label: edgeLabel,
+        labelStyle: { fontSize: 10, fontFamily: 'JetBrains Mono, monospace', fill: 'var(--fg-muted)' },
+        labelBgStyle: { fill: 'var(--bg)', fillOpacity: 0.9 },
+        labelBgPadding: [3, 6] as [number, number],
+        labelBgBorderRadius: 8,
+      } : {}),
+    });
   });
 
   tx.outputs.forEach((u, i) => {
@@ -88,7 +109,22 @@ function buildNodes(
       data: { kind: 'utxo', ...u, isInput: false, canExpand: false } as UTXONodeData,
       draggable: true,
     });
-    edges.push({ id: `e-${txId}-${uid}`, source: txId, target: uid, animated: true, type: 'smoothstep' });
+    const outLabel = fmtEdgeSats(u.value_sats);
+    edges.push({
+      id: `e-${txId}-${uid}`,
+      source: txId,
+      target: uid,
+      animated: true,
+      type: 'smoothstep',
+      style: { stroke: '#D1D5DB', strokeWidth: 1.5 },
+      ...(outLabel ? {
+        label: outLabel,
+        labelStyle: { fontSize: 10, fontFamily: 'JetBrains Mono, monospace', fill: 'var(--fg-muted)' },
+        labelBgStyle: { fill: 'var(--bg)', fillOpacity: 0.9 },
+        labelBgPadding: [3, 6] as [number, number],
+        labelBgBorderRadius: 8,
+      } : {}),
+    });
   });
 
   return { nodes, edges };

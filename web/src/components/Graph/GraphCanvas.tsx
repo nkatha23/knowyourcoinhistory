@@ -21,6 +21,7 @@ import { useGraphStore } from '../../store/graph';
 import TransactionNode from './TransactionNode';
 import UTXONode from './UTXONode';
 import EmptyState from './EmptyState';
+import FloatingSearch from './FloatingSearch';
 
 const nodeTypes: NodeTypes = {
   txNode: TransactionNode,
@@ -93,12 +94,14 @@ export default function GraphCanvas() {
         />
       </ReactFlow>
 
-      {isEmpty && (
+      {isEmpty ? (
         <EmptyState
           onLoadTxid={loadRootTx}
           recentSessions={recentSessions}
           backendOnline={backendOnline}
         />
+      ) : (
+        <FloatingSearch />
       )}
     </div>
   );

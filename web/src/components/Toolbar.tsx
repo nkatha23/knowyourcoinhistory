@@ -1,30 +1,22 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  Search, Upload, Download, Eye, EyeOff,
-  Settings, Sun, Moon, Loader2, Wallet, X, Plus,
+  Upload, Download, Eye, EyeOff,
+  Settings, Sun, Moon, Wallet, X, Plus,
 } from 'lucide-react';
 import { useGraphStore } from '../store/graph';
-import { exportLabels, importLabels, fetchWallets, fetchAddressHistory } from '../api/client';
+import { exportLabels, importLabels, fetchWallets } from '../api/client';
 
 interface Props {
   onOpenSettings: () => void;
 }
 
-const TXID_RE = /^[0-9a-fA-F]{64}$/;
-// Bitcoin addresses start with 1, 3, or bc1
-const ADDR_RE = /^(1|3|bc1|tb1|bcrt1)/i;
-
 export default function Toolbar({ onOpenSettings }: Props) {
-  const [query, setQuery] = useState('');
-  const [searching, setSearching] = useState(false);
   const [wallets, setWallets] = useState<string[]>([]);
   const [newWallet, setNewWallet] = useState('');
   const [showAddWallet, setShowAddWallet] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const loadRootTx = useGraphStore((s) => s.loadRootTx);
-  const clearGraph = useGraphStore((s) => s.clearGraph);
   const toggleFingerprint = useGraphStore((s) => s.toggleFingerprint);
   const toggleTheme = useGraphStore((s) => s.toggleTheme);
   const fingerprintEnabled = useGraphStore((s) => s.fingerprintEnabled);
@@ -33,7 +25,6 @@ export default function Toolbar({ onOpenSettings }: Props) {
   const walletId = useGraphStore((s) => s.walletId);
   const setWalletId = useGraphStore((s) => s.setWalletId);
 
-  // Load wallet list whenever backend comes online
   useEffect(() => {
     if (!backendOnline) return;
     fetchWallets()
@@ -41,46 +32,9 @@ export default function Toolbar({ onOpenSettings }: Props) {
       .catch(() => setWallets(['default']));
   }, [backendOnline]);
 
-  // Ensure the current walletId is in the list
   const walletOptions = wallets.includes(walletId)
     ? wallets
     : ['default', ...wallets.filter((w) => w !== 'default'), walletId];
-
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const input = query.trim();
-    if (!input) return;
-
-    if (!backendOnline) {
-      toast.error('Backend offline — start the server and configure a node in Settings');
-      return;
-    }
-
-    setSearching(true);
-    try {
-      if (TXID_RE.test(input)) {
-        // Direct txid lookup
-        await loadRootTx(input);
-        toast.success('Transaction loaded');
-      } else if (ADDR_RE.test(input)) {
-        // Address lookup → show tx list in toast or first tx
-        const result = await fetchAddressHistory(input, walletId);
-        if (result.count === 0) {
-          toast.info('No transactions found for this address');
-        } else {
-          const first = result.history[0];
-          await loadRootTx(first.tx_hash);
-          toast.success(`Found ${result.count} tx(s) — loaded most recent`);
-        }
-      } else {
-        toast.error('Enter a 64-char txid or a Bitcoin address (1…, 3…, bc1…)');
-      }
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to load');
-    } finally {
-      setSearching(false);
-    }
-  }
 
   async function handleExport() {
     try {
@@ -117,45 +71,18 @@ export default function Toolbar({ onOpenSettings }: Props) {
   return (
     <header className="h-14 flex items-center gap-3 px-4 border-b border-[var(--border)] bg-[var(--bg)] shrink-0 z-20">
       {/* Brand */}
-      <div className="flex items-center gap-2 mr-2 shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         <span className="text-xl font-bold text-[var(--color-btc)]">₿</span>
-        <span className="hidden sm:block font-semibold text-sm text-[var(--fg)] leading-tight">
+        <span
+          className="hidden sm:block text-[var(--fg)] leading-tight"
+          style={{ fontSize: 18, fontWeight: 600 }}
+        >
           Know Your<br />Coin History
         </span>
       </div>
 
-      <div className="h-6 w-px bg-[var(--border)] shrink-0" />
-
-      {/* Search bar */}
-      <form onSubmit={handleSearch} className="flex items-center flex-1 max-w-xl gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-muted)] pointer-events-none" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="txid (64 hex) or Bitcoin address…"
-            className="w-full pl-9 pr-7 h-8 text-sm rounded-lg border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--fg)] placeholder:text-[var(--fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-btc)]/40 focus:border-[var(--color-btc)] font-mono transition"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--fg-muted)] hover:text-[var(--fg)]"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-        <button
-          type="submit"
-          disabled={searching}
-          className="h-8 px-4 rounded-lg bg-[var(--color-btc)] text-white font-semibold text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5 transition shrink-0"
-        >
-          {searching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
-          <span className="hidden sm:inline">Search</span>
-        </button>
-      </form>
+      {/* Spacer */}
+      <div className="flex-1" />
 
       {/* Backend status dot */}
       <div
@@ -239,10 +166,6 @@ export default function Toolbar({ onOpenSettings }: Props) {
 
         <ToolBtn onClick={handleExport} title="Export labels (.jsonl / BIP-329)">
           <Download className="w-4 h-4" />
-        </ToolBtn>
-
-        <ToolBtn onClick={clearGraph} title="Clear graph">
-          <X className="w-4 h-4" />
         </ToolBtn>
 
         <ToolBtn
