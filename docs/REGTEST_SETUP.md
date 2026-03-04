@@ -107,7 +107,8 @@ Exit the container shell and paste the txid into the KYCC search bar.
 
 ```bash
 # From the repo root, with your venv active
-python -m kycc.server
+source .venv/bin/activate && python main.py
+# or: make dev-backend
 # Listening on http://127.0.0.1:5050
 ```
 
@@ -127,7 +128,7 @@ cd web && npm run dev
 # http://localhost:5173
 ```
 
-Open the app, click **Settings → Re-check** to confirm the node is detected, then paste your `$TXID` into the search bar.
+Open the app, click **Settings → Re-check** to confirm the node is detected. Paste your `$TXID` into the search box on the landing page (or the floating search bar at the top of the canvas if a graph is already loaded).
 
 ---
 
