@@ -218,6 +218,4 @@ MIT
 ## Acknowledgements
 
 - [0xB10C](https://github.com/0xB10C) for the original project idea and specification
-- [panon-btc/cory](https://github.com/panon-btc/cory) — Rust implementation, prior art
-- [aizuanjeme/know-your-coin-history](https://github.com/aizuanjeme/know-your-coin-history) — Python prior art
 - [Coin Smith](https://github.com/nkatha23/coin-smith) — PSBT/UTXO logic this project descends from
