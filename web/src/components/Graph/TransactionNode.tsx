@@ -55,7 +55,7 @@ function TransactionNode(props: NodeProps) {
 
       {/* Header */}
       <div className="px-3 pt-3 pb-2">
-        <div className="flex items-center gap-1.5 mb-1">
+        <div className="flex items-center gap-1.5 mb-1.5">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--fg-muted)]">
             Transaction
           </span>
@@ -70,12 +70,17 @@ function TransactionNode(props: NodeProps) {
             </span>
           )}
         </div>
-        <p className="font-mono text-xs text-[var(--fg)] truncate" title={data.txid}>
+        {/* txid: 14px JetBrains Mono weight 600 */}
+        <p
+          className="font-mono text-[var(--fg)] truncate"
+          style={{ fontSize: 14, fontWeight: 600 }}
+          title={data.txid}
+        >
           {short(data.txid)}
         </p>
       </div>
 
-      {/* Metadata chips */}
+      {/* Metadata chips — 12px */}
       <div className="px-3 pb-2 flex flex-wrap gap-1.5">
         {data.fee_sats !== null && (
           <Chip label="Fee" value={fmt(data.fee_sats)} />
@@ -90,18 +95,18 @@ function TransactionNode(props: NodeProps) {
       {/* I/O summary */}
       <div className="mx-3 mb-2 px-2 py-1.5 rounded-md bg-[var(--bg-subtle)] border border-[var(--border)] flex justify-around text-center">
         <div>
-          <p className="text-[10px] text-[var(--fg-muted)] mb-0.5">Inputs</p>
-          <p className="text-sm font-semibold">{data.inputs.length}</p>
+          <p className="text-[var(--fg-muted)] mb-0.5" style={{ fontSize: 11 }}>Inputs</p>
+          <p className="font-semibold" style={{ fontSize: 14 }}>{data.inputs.length}</p>
         </div>
         <div className="border-l border-[var(--border)]" />
         <div>
-          <p className="text-[10px] text-[var(--fg-muted)] mb-0.5">Outputs</p>
-          <p className="text-sm font-semibold">{data.outputs.length}</p>
+          <p className="text-[var(--fg-muted)] mb-0.5" style={{ fontSize: 11 }}>Outputs</p>
+          <p className="font-semibold" style={{ fontSize: 14 }}>{data.outputs.length}</p>
         </div>
         <div className="border-l border-[var(--border)]" />
         <div>
-          <p className="text-[10px] text-[var(--fg-muted)] mb-0.5">Total in</p>
-          <p className="text-sm font-semibold font-mono">
+          <p className="text-[var(--fg-muted)] mb-0.5" style={{ fontSize: 11 }}>Total in</p>
+          <p className="font-semibold font-mono" style={{ fontSize: 13 }}>
             {fmt(data.inputs.reduce((s, u) => s + u.value_sats, 0))}
           </p>
         </div>
@@ -110,7 +115,9 @@ function TransactionNode(props: NodeProps) {
       {/* Label */}
       {data.label && (
         <div className="mx-3 mb-2 px-2 py-1 rounded-md bg-[var(--color-btc-dim)] border border-[var(--color-btc)]/30">
-          <p className="text-xs font-medium text-[var(--color-btc)] truncate">🏷 {data.label}</p>
+          <p className="font-medium text-[var(--color-btc)] truncate" style={{ fontSize: 13 }}>
+            🏷 {data.label}
+          </p>
         </div>
       )}
 
@@ -120,12 +127,12 @@ function TransactionNode(props: NodeProps) {
           {annotations.map((a, i) => (
             <div
               key={i}
-              className={`flex items-start gap-2 px-2 py-1.5 rounded-md border text-xs ${SEV_LABEL[a.severity]}`}
+              className={`flex items-start gap-2 px-2 py-1.5 rounded-md border ${SEV_LABEL[a.severity]}`}
             >
               <span className={`mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${SEV_DOT[a.severity]}`} />
               <div>
-                <p className="font-mono font-semibold text-[10px]">{a.code}</p>
-                <p className="font-sans text-[10px] opacity-80 leading-tight mt-0.5">{a.description}</p>
+                <p className="font-mono font-semibold" style={{ fontSize: 11 }}>{a.code}</p>
+                <p className="font-sans opacity-80 leading-tight mt-0.5" style={{ fontSize: 11 }}>{a.description}</p>
               </div>
             </div>
           ))}
@@ -139,7 +146,10 @@ function TransactionNode(props: NodeProps) {
 
 function Chip({ label, value }: { label: string; value: string }) {
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-[var(--border)] bg-[var(--bg-subtle)] text-[10px] text-[var(--fg-muted)]">
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--fg-muted)]"
+      style={{ fontSize: 12 }}
+    >
       <span className="font-medium text-[var(--fg-muted)]">{label}</span>
       <span className="font-mono font-semibold text-[var(--fg)]">{value}</span>
     </span>
