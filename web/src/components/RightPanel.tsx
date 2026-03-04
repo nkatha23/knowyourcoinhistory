@@ -48,15 +48,17 @@ export default function RightPanel() {
 
   const handleSave = useCallback(async () => {
     if (!selectedId) return;
+    // Backend rejects empty labels — skip the call silently
+    if (!labelText.trim()) return;
     try {
       await saveLabel({
         ref_type: refType,
         ref: identifier,
-        label: labelText,
+        label: labelText.trim(),
         wallet_id: walletId,
         spendable: !isTx ? spendable : undefined,
       });
-      refreshNodeLabel(selectedId, labelText || null);
+      refreshNodeLabel(selectedId, labelText.trim() || null);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch {
