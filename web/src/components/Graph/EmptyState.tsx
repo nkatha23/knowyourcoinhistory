@@ -23,17 +23,17 @@ const REFERENCE_TXS = [
 
 const INFO_CARDS = [
   {
-    icon: '🔍',
+    // icon: '🔍',
     title: 'What is a txid?',
     body: 'A transaction ID is a 64-character string that uniquely identifies any Bitcoin transaction',
   },
   {
-    icon: '🔗',
+    // icon: '🔗',
     title: 'What is a UTXO?',
     body: 'An Unspent Transaction Output is a coin you can spend. Each input in a transaction consumes a previous UTXO',
   },
   {
-    icon: '🏷️',
+    // icon: '🏷️',
     title: 'What is BIP-329?',
     body: 'A standard format for attaching labels to your transactions and addresses, portable across wallets',
   },
@@ -240,7 +240,7 @@ export default function EmptyState({ onLoadTxid, recentSessions, backendOnline }
                 flexShrink: 0,
               }}
             >
-              <div style={{ fontSize: 24, marginBottom: 10 }}>{card.icon}</div>
+              {/* icon removed */}
               <p
                 className="text-[var(--fg)]"
                 style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}
