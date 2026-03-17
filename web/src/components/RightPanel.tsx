@@ -237,7 +237,7 @@ export default function RightPanel() {
             {annotations.length > 0 && (
               <div className="px-4 py-3">
                 <p className="text-xs font-semibold text-[var(--fg)] mb-2">
-                  🔍 Privacy Fingerprints ({annotations.length})
+                   Privacy Fingerprints ({annotations.length})
                 </p>
                 <div className="space-y-2">
                   {annotations.map((a, i) => {
@@ -284,7 +284,7 @@ export default function RightPanel() {
             {/* Beginner tip */}
             <div className="mx-4 mb-4 p-3 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border)]">
               <p className="text-[10px] text-[var(--fg-muted)] leading-relaxed">
-                💡 <strong>Labels</strong> help you remember who owns what.
+                <strong>Labels</strong> help you remember who owns what.
                 Save a label, then export as <span className="font-mono">.jsonl</span> for portability (BIP-329 format).
               </p>
             </div>
