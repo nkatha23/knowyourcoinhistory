@@ -10,7 +10,9 @@ from kycc.labels.store import LabelStore
 # Absolute path to the React production build.
 # In development, Vite runs separately and this directory may not exist.
 # In Docker, the frontend stage copies web/dist here before the image starts.
-_STATIC_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "web", "dist"))
+_STATIC_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "web", "dist")
+)
 
 
 def create_app(config_path: str = "kycc.toml") -> Flask:
@@ -83,5 +85,7 @@ def _make_adapter(cfg):
     if cfg.node_type == "electrum":
         from kycc.adapters.electrum import ElectrumAdapter
 
-        return ElectrumAdapter(host=cfg.node_host, port=cfg.node_port, network=cfg.node_network)
+        return ElectrumAdapter(
+            host=cfg.node_host, port=cfg.node_port, network=cfg.node_network
+        )
     raise ValueError(f"Unknown node type: {cfg.node_type}")

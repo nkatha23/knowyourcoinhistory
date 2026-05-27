@@ -43,10 +43,17 @@ def load_config(path: str = "kycc.toml") -> Config:
         node_port=int(os.environ.get("KYCC_NODE_PORT", node.get("port", 8332))),
         node_user=os.environ.get("KYCC_NODE_USER", node.get("user", "")),
         node_password=os.environ.get("KYCC_NODE_PASSWORD", node.get("password", "")),
-        node_cookie_file=os.environ.get("KYCC_NODE_COOKIE_FILE", node.get("cookie_file", "")),
-        node_network=os.environ.get("KYCC_NODE_NETWORK", node.get("network", "mainnet")),
+        node_cookie_file=os.environ.get(
+            "KYCC_NODE_COOKIE_FILE", node.get("cookie_file", "")
+        ),
+        node_network=os.environ.get(
+            "KYCC_NODE_NETWORK", node.get("network", "mainnet")
+        ),
         server_host=os.environ.get("KYCC_SERVER_HOST", server.get("host", "0.0.0.0")),
         server_port=int(os.environ.get("KYCC_SERVER_PORT", server.get("port", 5050))),
-        server_debug=os.environ.get("KYCC_SERVER_DEBUG", str(server.get("debug", False))).lower() == "true",
+        server_debug=os.environ.get(
+            "KYCC_SERVER_DEBUG", str(server.get("debug", False))
+        ).lower()
+        == "true",
         db_path=os.environ.get("KYCC_DB_PATH", db.get("path", "/data/kycc.db")),
     )
