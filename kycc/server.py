@@ -83,5 +83,5 @@ def _make_adapter(cfg):
     if cfg.node_type == "electrum":
         from kycc.adapters.electrum import ElectrumAdapter
 
-        return ElectrumAdapter(host=cfg.node_host, port=cfg.node_port)
+        return ElectrumAdapter(host=cfg.node_host, port=cfg.node_port, network=cfg.node_network)
     raise ValueError(f"Unknown node type: {cfg.node_type}")

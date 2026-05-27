@@ -34,18 +34,24 @@ No `user` or `password` fields are needed for Electrum (most public/local server
 
 | Feature | Bitcoin Core | Electrum |
 |---------|-------------|----------|
-| Fetch raw transaction by txid | Yes (`txindex=1`) | Yes |
-| Address history | `scantxoutset` (UTXO set only) | Full history via scripthash |
+| Fetch raw transaction by txid | Yes (`txindex=1` recommended) | Yes (for indexed transactions) |
+| Address history — spent outputs | No (`scantxoutset` returns UTXO set only) | Yes (full history via scripthash) |
+| Address history — unconfirmed | No | Yes (mempool included) |
 | Block height | `getblockcount` | `blockchain.headers.subscribe` |
 | Graph expansion (parent TXs) | Yes | Yes (for indexed transactions) |
 
 ---
 
+## Scripthash calculation
+
+Electrum identifies addresses by scripthash: `SHA256(scriptPubKey_bytes)` with the result byte-reversed. The adapter converts a Bitcoin address to its scriptPubKey using `python-bitcoinlib` before querying the server. The `network` setting in `kycc.toml` (or `KYCC_NODE_NETWORK` env var) must be set correctly so that testnet and regtest address prefixes decode without error.
+
+---
+
 ## Limitations
 
-- Electrum servers index transactions by address/scripthash. Fetching an arbitrary txid that is not associated with any of your addresses may fail on some server implementations.
-- `get_address_history` returns confirmed and mempool transactions for the address, unlike Bitcoin Core's `scantxoutset` which only returns current UTXO set members.
-- For full graph traversal of arbitrary on-chain transactions, Bitcoin Core with `txindex=1` is recommended.
+- Electrum servers index transactions by scripthash. Fetching an arbitrary txid not associated with any indexed address may fail depending on the server implementation. For full graph traversal of arbitrary on-chain transactions, Bitcoin Core with `txindex=1` is recommended.
+- `get_address_history` returns confirmed and unconfirmed (mempool) transactions, unlike Bitcoin Core's `scantxoutset` which returns only the current UTXO set.
 
 ---
 

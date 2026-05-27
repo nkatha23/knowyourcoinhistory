@@ -23,14 +23,18 @@ KYCC is intentionally local-first: the Flask process never makes outbound calls 
 
 ### `kycc/config.py` — Config loader
 
-Reads `kycc.toml` at startup using Python's built-in `tomllib`. Exposes a `Config` dataclass consumed by `server.py`.
+Reads `kycc.toml` using Python's built-in `tomllib`, then overlays environment variables. Exposes a `Config` dataclass consumed by `server.py`.
+
+Priority: **env var > kycc.toml > built-in default**. `kycc.toml` is optional — all values can be supplied via env vars, which is the recommended approach for Docker deployments.
 
 Key fields:
 - `node_type` — `"bitcoincore"` or `"electrum"`
 - `node_host`, `node_port`, `node_user`, `node_password`
 - `node_network` — `"mainnet"` | `"testnet"` | `"signet"` | `"regtest"`
 - `server_host`, `server_port`, `server_debug`
-- `db_path` — SQLite file path for the label store
+- `db_path` — SQLite file path for the label store (defaults to `/data/kycc.db` for Docker)
+
+Env var names: `KYCC_NODE_TYPE`, `KYCC_NODE_HOST`, `KYCC_NODE_PORT`, `KYCC_NODE_USER`, `KYCC_NODE_PASSWORD`, `KYCC_NODE_NETWORK`, `KYCC_SERVER_HOST`, `KYCC_SERVER_PORT`, `KYCC_SERVER_DEBUG`, `KYCC_DB_PATH`.
 
 ### `kycc/adapters/` — Node adapters
 
@@ -52,9 +56,13 @@ def _rpc(self) -> AuthServiceProxy:
     return AuthServiceProxy(self._url)
 ```
 
+`getrawtransaction` does not include `blockheight` in all Bitcoin Core versions — only `blockhash` is guaranteed for confirmed transactions. The adapter resolves the height via a second call to `getblockheader(blockhash)` and injects `blockheight` into the raw dict before it reaches the parser. For unconfirmed transactions (`blockhash` absent), `block_height` is `None`.
+
 **`ElectrumAdapter`** (`electrum.py`)
 
 Connects to an Electrum server via TCP JSON-RPC. Translates `blockchain.transaction.get` and `blockchain.scripthash.get_history` calls into the same `NodeAdapter` interface.
+
+Electrum identifies addresses by scripthash — `SHA256(scriptPubKey_bytes)` with the bytes reversed. The adapter converts Bitcoin addresses to their scriptPubKey using `python-bitcoinlib` before making the scripthash query. The `network` parameter (passed from `Config.node_network`) is required so that testnet/regtest address prefixes are decoded correctly.
 
 ### `kycc/graph/` — Transaction graph
 
@@ -123,7 +131,7 @@ Zustand store is the single source of truth for:
 - `recentSessions` — loaded from `/api/sessions` on startup
 
 Key actions:
-- `loadRootTx(txid)` — fetches TX, builds nodes/edges, replaces graph
+- `loadRootTx(txid)` — fetches TX, builds nodes/edges, replaces the entire graph. Resets `loadedTxIds` to `{txid}` so expand buttons appear correctly on all inputs of the new root.
 - `expandInputTx(txid, vout)` — fetches parent TX, merges into existing graph
 - `clearGraph()` — resets to empty state
 
@@ -183,6 +191,5 @@ Matrix: Python 3.11 and 3.12. Integration tests (`tests/integration/`) are skipp
 
 ## Known Limitations
 
-- `loadedTxIds` in the Zustand store accumulates across root TX loads (not cleared when loading a new root). This means expand buttons may not appear on inputs whose parent TXIDs happen to match ones loaded in a previous graph. Workaround: use the Home button to clear the graph before starting a new search.
-- Address history uses `scantxoutset` (Bitcoin Core) which only finds UTXOs in the current UTXO set — it cannot find spent outputs.
-- The Electrum adapter does not implement `get_raw_transaction` for transactions not in the address history; full graph traversal requires Bitcoin Core with `txindex=1`.
+- The Electrum adapter cannot fetch a transaction by txid unless that transaction is indexed by the server (i.e. associated with a scripthash the server has seen). Full graph traversal of arbitrary on-chain transactions requires Bitcoin Core with `txindex=1`.
+- Address history via Bitcoin Core (`scantxoutset`) only finds UTXOs in the current UTXO set — spent outputs are not returned. Use an Electrum server for full address history including spent outputs.
