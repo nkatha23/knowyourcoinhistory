@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import sqlite3
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Generator, Literal, Optional
 
 from kycc.labels.migrator import migrate
 
@@ -27,10 +28,18 @@ class LabelStore:
         migrate(db_path)
         self._path = db_path
 
-    def _conn(self) -> sqlite3.Connection:
+    @contextmanager
+    def _conn(self) -> Generator[sqlite3.Connection, None, None]:
         conn = sqlite3.connect(self._path)
         conn.row_factory = sqlite3.Row
-        return conn
+        try:
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
 
     def upsert(self, label: Label) -> None:
         now = int(time.time())
