@@ -55,5 +55,5 @@ def load_config(path: str = "kycc.toml") -> Config:
             "KYCC_SERVER_DEBUG", str(server.get("debug", False))
         ).lower()
         == "true",
-        db_path=os.environ.get("KYCC_DB_PATH", db.get("path", "/data/kycc.db")),
+        db_path=os.environ.get("KYCC_DB_PATH", db.get("path", "kycc.db")),
     )
