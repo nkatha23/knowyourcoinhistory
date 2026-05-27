@@ -2,7 +2,7 @@
 
 > A privacy-preserving Bitcoin transaction graph explorer for labeling and auditing your own coin history.
 
-Proposed by [0xB10C](https://github.com/0xB10C/project-ideas/issues/13). KYCC lets you load a transaction or UTXO, recursively trace its ancestry, attach labels, detect wallet fingerprinting heuristics, and export everything in the [BIP-329](https://github.com/bitcoin/bips/blob/master/bip-0329.mediawiki) wallet label standard — all against your own local Bitcoin Core node or Electrum server. No third-party APIs. No telemetry.
+ KYCC lets you load a transaction or UTXO, recursively trace its ancestry, attach labels, detect wallet fingerprinting heuristics, and export everything in the [BIP-329](https://github.com/bitcoin/bips/blob/master/bip-0329.mediawiki) wallet label standard — all against your own local Bitcoin Core node or Electrum server. No third-party APIs. No telemetry.
 
 ---
 

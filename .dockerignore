@@ -1,0 +1,32 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+htmlcov/
+.coverage
+
+# Node
+web/node_modules/
+web/dist/
+
+# Dev config — never bake credentials into the image
+kycc.toml
+kycc.db
+
+# Regtest compose file (not needed in the app image)
+docker-compose.regtest.yml
+
+# Docs and tests (keeps the image smaller)
+docs/
+tests/
+
+# Git
+.git/
+.gitignore

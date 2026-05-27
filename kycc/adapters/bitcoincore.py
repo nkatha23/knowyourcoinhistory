@@ -14,7 +14,12 @@ class BitcoinCoreAdapter(NodeAdapter):
         return AuthServiceProxy(self._url)
 
     def get_raw_transaction(self, txid: str) -> dict[str, Any]:
-        return self._rpc().getrawtransaction(txid, 2)
+        rpc = self._rpc()
+        result = rpc.getrawtransaction(txid, 2)
+        if "blockhash" in result:
+            header = rpc.getblockheader(result["blockhash"])
+            result["blockheight"] = header.get("height")
+        return result
 
     def get_block_height(self) -> int:
         return self._rpc().getblockcount()

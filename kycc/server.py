@@ -1,17 +1,22 @@
+import os
 import tomllib
 
-from flask import Flask
+from flask import Flask, send_from_directory
 
 from kycc.config import load_config
 from kycc.fingerprint.engine import DETECTOR_MAP, FingerprintEngine
 from kycc.labels.store import LabelStore
 
+# Absolute path to the React production build.
+# In development, Vite runs separately and this directory may not exist.
+# In Docker, the frontend stage copies web/dist here before the image starts.
+_STATIC_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "web", "dist"))
+
 
 def create_app(config_path: str = "kycc.toml") -> Flask:
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder=_STATIC_DIR, static_url_path="")
     cfg = load_config(config_path)
 
-    # Store config so routes can read node_type, network, etc.
     app.config["KYCC_CONFIG"] = cfg
 
     store = LabelStore(cfg.db_path)
@@ -20,7 +25,6 @@ def create_app(config_path: str = "kycc.toml") -> Flask:
     adapter = _make_adapter(cfg)
     app.config["NODE_ADAPTER"] = adapter
 
-    # Load enabled heuristics from toml (fall back to all if not set)
     enabled = _load_heuristics(config_path)
     app.config["ENABLED_HEURISTICS"] = enabled
     engine = FingerprintEngine(enabled=enabled if enabled else None)
@@ -39,6 +43,18 @@ def create_app(config_path: str = "kycc.toml") -> Flask:
     app.register_blueprint(export_bp)
     app.register_blueprint(session_bp)
     app.register_blueprint(address_bp)
+
+    # Serve the React SPA for all non-API routes.
+    # This only matters in production (Docker); in dev, Vite handles the frontend.
+    @app.route("/", defaults={"path": ""})
+    @app.route("/<path:path>")
+    def serve_spa(path: str):
+        # If the path matches a real file in web/dist (JS, CSS, assets), serve it.
+        # Otherwise fall back to index.html so React Router can handle the route.
+        file_path = os.path.join(app.static_folder, path)
+        if path and os.path.isfile(file_path):
+            return send_from_directory(app.static_folder, path)
+        return send_from_directory(app.static_folder, "index.html")
 
     return app
 
