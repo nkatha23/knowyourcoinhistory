@@ -38,13 +38,14 @@ Env var names: `KYCC_NODE_TYPE`, `KYCC_NODE_HOST`, `KYCC_NODE_PORT`, `KYCC_NODE_
 
 ### `kycc/adapters/` — Node adapters
 
-Abstract base (`NodeAdapter`) defines three methods every adapter must implement:
+Abstract base (`NodeAdapter`) defines two abstract methods that every adapter must implement:
 
 ```python
 def get_raw_transaction(self, txid: str) -> dict
 def get_block_height(self) -> int
-def get_address_history(self, address: str) -> list[dict]
 ```
+
+`get_address_history(self, address: str) -> list[dict]` is a non-abstract default that raises `NotImplementedError`. Adapters that support it override it; the base implementation is a safe fallback.
 
 **`BitcoinCoreAdapter`** (`bitcoincore.py`)
 
@@ -82,7 +83,7 @@ sats = round(value * 100_000_000)  # NOT value * 1e8 (float — raises TypeError
 
 ### `kycc/fingerprint/` — Privacy heuristics
 
-`FingerprintEngine` runs all enabled detectors over a `TxNode` and attaches `Annotation` objects. Each annotation has:
+`FingerprintEngine` runs all enabled detectors over a `TxNode` and attaches `HeuristicResult` objects to `tx.annotations` via `annotate_inplace()`. Each `HeuristicResult` has:
 - `code` — machine-readable identifier (e.g. `"UIOH"`, `"ADDRESS_REUSE"`)
 - `severity` — `"info"` | `"warning"` | `"flag"`
 - `description` — human-readable explanation
@@ -92,26 +93,30 @@ See [HEURISTICS.md](HEURISTICS.md) for full detector documentation.
 
 ### `kycc/labels/` — BIP-329 label store
 
-SQLite-backed. Schema:
+SQLite-backed. The schema is applied by `labels/migrator.py` on startup. Key tables:
+
 ```sql
 CREATE TABLE labels (
-    wallet_id   TEXT NOT NULL,
-    ref_type    TEXT NOT NULL,   -- tx | utxo | addr | xpub
-    ref         TEXT NOT NULL,
-    label       TEXT NOT NULL,
-    origin      TEXT,
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    wallet_id   TEXT    NOT NULL DEFAULT 'default',
+    ref_type    TEXT    NOT NULL CHECK(ref_type IN ('tx','utxo','addr','xpub')),
+    ref         TEXT    NOT NULL,
+    label       TEXT    NOT NULL,
+    origin      TEXT    NOT NULL DEFAULT 'user',
     spendable   INTEGER,
-    created_at  INTEGER,
-    updated_at  INTEGER,
-    PRIMARY KEY (wallet_id, ref_type, ref)
+    created_at  INTEGER NOT NULL,
+    updated_at  INTEGER NOT NULL,
+    UNIQUE(wallet_id, ref_type, ref)
 );
 ```
 
-Labels are wallet-namespaced so multiple wallets can coexist without collision. `bip329.py` serialises rows to/from the JSONL format defined in BIP-329.
+Additional tables: `sessions` (graph session history), `heuristic_cache` (reserved for future use), `schema_meta` (migration version tracking).
+
+Labels are wallet-namespaced so multiple wallets can label the same UTXO independently. `bip329.py` serialises rows to/from the JSONL format defined in BIP-329. The `wallet_id` field is internal and is not written to exported files.
 
 ### `kycc/routes/` — Flask API blueprints
 
-Each route module is a separate `Blueprint` registered in `server.py`. See the [API reference in README.md](../README.md#api-reference) for the full endpoint list.
+Each route module is a separate `Blueprint` registered in `server.py`. See [FRONTEND.md](FRONTEND.md#api-client-apiclientts) for the full endpoint list.
 
 ---
 
@@ -127,7 +132,8 @@ Zustand store is the single source of truth for:
 - `hiddenHeuristics` — set of disabled heuristic keys (persisted)
 - `walletId` — current wallet context (persisted)
 - `backendOnline` — backend connectivity flag
-- `loadedTxIds`, `loadingTxIds` — prevent duplicate fetches
+- `loadedTxIds` — set of txids already in the graph; used to set the `canExpand` flag on UTXO input nodes
+- `loadingTxIds` — set of txids currently being fetched; prevents duplicate in-flight requests
 - `recentSessions` — loaded from `/api/sessions` on startup
 
 Key actions:

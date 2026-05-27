@@ -13,7 +13,7 @@ Edit `kycc.toml`:
 type    = "electrum"
 host    = "127.0.0.1"
 port    = 50001          # TCP plaintext; use 50002 for SSL
-network = "mainnet"      # mainnet | testnet | signet
+network = "mainnet"      # mainnet | testnet | signet | regtest
 ```
 
 No `user` or `password` fields are needed for Electrum (most public/local servers are unauthenticated).

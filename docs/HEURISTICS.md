@@ -17,7 +17,7 @@ Severity levels:
 **Severity:** `warning`
 **Config key:** `uioh`
 
-Fires when the transaction has more than one input **and** the total input value exceeds the total output value by more than the fee. This suggests at least one input was unnecessary to fund the outputs, revealing that the sender controls multiple UTXOs and chose to include extras (possibly for UTXO consolidation or to meet a minimum threshold).
+Fires when the transaction has two or more inputs and the largest single input is sufficient to cover all outputs plus twice the fee on its own. This means the additional inputs were unnecessary to fund the transaction — they were included for another reason (e.g. suboptimal coin selection, or to obscure the payment amount in a CoinJoin-like pattern).
 
 ### 2. Address Reuse
 
@@ -25,7 +25,7 @@ Fires when the transaction has more than one input **and** the total input value
 **Severity:** `flag`
 **Config key:** `address_reuse`
 
-Fires when an address appears in both the inputs and the outputs of the same transaction, or when an input address matches a previously labeled address in the label store. Address reuse directly links sender and receiver identities.
+Fires when one or more addresses appear in both the inputs and the outputs of the same transaction. Address reuse directly links sender and receiver identities and makes chain analysis significantly easier.
 
 ### 3. Round Payment
 
@@ -33,7 +33,7 @@ Fires when an address appears in both the inputs and the outputs of the same tra
 **Severity:** `info`
 **Config key:** `round_payment`
 
-Fires when one or more output values are round numbers in BTC (e.g. 0.001, 0.01, 0.1, 1.0) or round numbers in satoshis (multiples of 10,000, 100,000, 1,000,000). Round amounts are a strong signal that a value is a payment rather than change, reducing ambiguity between outputs.
+Fires when one or more output values are exact multiples of a round-satoshi threshold. The thresholds checked are 1,000 / 10,000 / 100,000 / 1,000,000 / 10,000,000 sats. Round amounts are a strong signal that a value is a payment rather than change, reducing ambiguity between outputs.
 
 ### 4. Change Inference
 
@@ -41,10 +41,7 @@ Fires when one or more output values are round numbers in BTC (e.g. 0.001, 0.01,
 **Severity:** `info`
 **Config key:** `change_inference`
 
-Identifies the most likely change output using a combination of:
-- Script type match — change output has the same script type as the input(s)
-- Value heuristic — the smaller of two outputs when one is round is likely change
-- Dust threshold — outputs below 546 sats are unlikely to be intentional payments
+Fires on transactions with exactly two outputs where all inputs share the same script type. If exactly one output also matches that script type, it is flagged as the probable change output. Transactions with more than two outputs, coinbase transactions, or transactions with mixed input script types are skipped.
 
 ### 5. Script Type Mismatch
 
