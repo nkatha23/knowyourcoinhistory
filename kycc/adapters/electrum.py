@@ -8,11 +8,19 @@ from kycc.adapters.base import NodeAdapter
 
 
 class ElectrumAdapter(NodeAdapter):
-    def __init__(self, host: str, port: int, use_ssl: bool = True, timeout: int = 10):
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        use_ssl: bool = True,
+        timeout: int = 10,
+        network: str = "mainnet",
+    ):
         self._host = host
         self._port = port
         self._use_ssl = use_ssl
         self._timeout = timeout
+        self._network = network
         self._sock = None
         self._id = 0
         self._connect()
@@ -97,7 +105,7 @@ class ElectrumAdapter(NodeAdapter):
         return 0
 
     def get_address_history(self, address: str) -> list[dict]:
-        scripthash = _address_to_scripthash(address)
+        scripthash = _address_to_scripthash(address, self._network)
         return self._call("blockchain.scripthash.get_history", [scripthash]) or []
 
     def close(self) -> None:
@@ -108,6 +116,27 @@ class ElectrumAdapter(NodeAdapter):
                 pass
 
 
-def _address_to_scripthash(address: str) -> str:
-    h = hashlib.sha256(address.encode()).digest()
-    return h[::-1].hex()
+# python-bitcoinlib doesn't support signet by name; treat it like testnet for
+# address decoding purposes (same address prefixes).
+_BTCLIB_NETWORK = {
+    "mainnet": "mainnet",
+    "testnet": "testnet",
+    "regtest": "regtest",
+    "signet": "testnet",
+}
+
+
+def _address_to_scripthash(address: str, network: str = "mainnet") -> str:
+    """
+    Compute the Electrum scripthash for a Bitcoin address.
+
+    Electrum identifies addresses by SHA256(scriptPubKey_bytes), byte-reversed.
+    Hashing the address string would produce a completely different value and
+    return empty results from the server.
+    """
+    from bitcoin import SelectParams
+    from bitcoin.wallet import CBitcoinAddress
+
+    SelectParams(_BTCLIB_NETWORK.get(network, "mainnet"))
+    script_bytes = bytes(CBitcoinAddress(address).to_scriptPubKey())
+    return hashlib.sha256(script_bytes).digest()[::-1].hex()

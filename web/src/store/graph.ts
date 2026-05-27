@@ -204,8 +204,8 @@ export const useGraphStore = create<AppStore>((set, get) => ({
   setRecentSessions: (sessions) => set({ recentSessions: sessions }),
 
   loadRootTx: async (txid) => {
-    const { loadedTxIds, loadingTxIds, walletId } = get();
-    if (loadedTxIds.has(txid) || loadingTxIds.has(txid)) return;
+    const { loadingTxIds, walletId } = get();
+    if (loadingTxIds.has(txid)) return;
 
     set((s) => {
       const next = new Set(s.loadingTxIds);
@@ -221,11 +221,11 @@ export const useGraphStore = create<AppStore>((set, get) => ({
     );
 
     set((s) => {
-      const loaded = new Set(s.loadedTxIds);
-      loaded.add(txid);
       const loading = new Set(s.loadingTxIds);
       loading.delete(txid);
-      return { nodes: newNodes, edges: newEdges, loadedTxIds: loaded, loadingTxIds: loading };
+      // Start fresh — previous session's loadedTxIds must not carry over so
+      // expand buttons appear correctly on inputs of the new root transaction.
+      return { nodes: newNodes, edges: newEdges, loadedTxIds: new Set([txid]), loadingTxIds: loading };
     });
 
     // Create a session for this root tx (fire-and-forget)

@@ -163,7 +163,8 @@ Typed wrappers over `fetch`. All calls go to `/api/*` (Vite proxies to `:5050`).
 
 | Export | Endpoint |
 |--------|----------|
-| `fetchHealth` | `GET /api/health` |
+| `fetchStatus` | `GET /api/health` |
+| `fetchHealth` | alias for `fetchStatus` (backwards compat) |
 | `fetchTx` | `GET /api/tx?txid=` |
 | `fetchAddressHistory` | `GET /api/address?address=&wallet_id=` |
 | `saveLabel` | `POST /api/label` |

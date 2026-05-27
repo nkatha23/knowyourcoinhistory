@@ -25,8 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flask python-bitcoinrpc python-bitcoinlib \
-                      pytest pytest-cov black ruff mypy
+          pip install -r requirements.txt
 
       - name: Lint (ruff)
         run: ruff check kycc/ tests/

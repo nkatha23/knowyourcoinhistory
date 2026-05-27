@@ -3,15 +3,19 @@ from unittest.mock import MagicMock, patch
 
 from kycc.adapters.electrum import ElectrumAdapter, _address_to_scripthash
 
+# Valid mainnet P2WPKH addresses from BIP-173 test vectors.
+ADDR_A = "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+ADDR_B = "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq"
+
 
 def test_scripthash_is_64_hex_chars():
-    h = _address_to_scripthash("bc1qtest")
+    h = _address_to_scripthash(ADDR_A)
     assert len(h) == 64
     assert all(c in "0123456789abcdef" for c in h)
 
 
 def test_scripthash_different_addresses_differ():
-    assert _address_to_scripthash("bc1qone") != _address_to_scripthash("bc1qtwo")
+    assert _address_to_scripthash(ADDR_A) != _address_to_scripthash(ADDR_B)
 
 
 def _make_adapter(responses: list) -> ElectrumAdapter:
@@ -47,11 +51,11 @@ def test_get_address_history():
         {"tx_hash": "b" * 64, "height": 800_001},
     ]
     adapter = _make_adapter([history])
-    result = adapter.get_address_history("bc1qtest")
+    result = adapter.get_address_history(ADDR_A)
     assert len(result) == 2
     assert result[0]["tx_hash"] == "a" * 64
 
 
 def test_get_address_history_empty():
     adapter = _make_adapter([[]])
-    assert adapter.get_address_history("bc1qtest") == []
+    assert adapter.get_address_history(ADDR_A) == []

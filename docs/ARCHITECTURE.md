@@ -23,24 +23,29 @@ KYCC is intentionally local-first: the Flask process never makes outbound calls 
 
 ### `kycc/config.py` — Config loader
 
-Reads `kycc.toml` at startup using Python's built-in `tomllib`. Exposes a `Config` dataclass consumed by `server.py`.
+Reads `kycc.toml` using Python's built-in `tomllib`, then overlays environment variables. Exposes a `Config` dataclass consumed by `server.py`.
+
+Priority: **env var > kycc.toml > built-in default**. `kycc.toml` is optional — all values can be supplied via env vars, which is the recommended approach for Docker deployments.
 
 Key fields:
 - `node_type` — `"bitcoincore"` or `"electrum"`
 - `node_host`, `node_port`, `node_user`, `node_password`
 - `node_network` — `"mainnet"` | `"testnet"` | `"signet"` | `"regtest"`
 - `server_host`, `server_port`, `server_debug`
-- `db_path` — SQLite file path for the label store
+- `db_path` — SQLite file path for the label store (defaults to `/data/kycc.db` for Docker)
+
+Env var names: `KYCC_NODE_TYPE`, `KYCC_NODE_HOST`, `KYCC_NODE_PORT`, `KYCC_NODE_USER`, `KYCC_NODE_PASSWORD`, `KYCC_NODE_NETWORK`, `KYCC_SERVER_HOST`, `KYCC_SERVER_PORT`, `KYCC_SERVER_DEBUG`, `KYCC_DB_PATH`.
 
 ### `kycc/adapters/` — Node adapters
 
-Abstract base (`NodeAdapter`) defines three methods every adapter must implement:
+Abstract base (`NodeAdapter`) defines two abstract methods that every adapter must implement:
 
 ```python
 def get_raw_transaction(self, txid: str) -> dict
 def get_block_height(self) -> int
-def get_address_history(self, address: str) -> list[dict]
 ```
+
+`get_address_history(self, address: str) -> list[dict]` is a non-abstract default that raises `NotImplementedError`. Adapters that support it override it; the base implementation is a safe fallback.
 
 **`BitcoinCoreAdapter`** (`bitcoincore.py`)
 
@@ -52,9 +57,13 @@ def _rpc(self) -> AuthServiceProxy:
     return AuthServiceProxy(self._url)
 ```
 
+`getrawtransaction` does not include `blockheight` in all Bitcoin Core versions — only `blockhash` is guaranteed for confirmed transactions. The adapter resolves the height via a second call to `getblockheader(blockhash)` and injects `blockheight` into the raw dict before it reaches the parser. For unconfirmed transactions (`blockhash` absent), `block_height` is `None`.
+
 **`ElectrumAdapter`** (`electrum.py`)
 
 Connects to an Electrum server via TCP JSON-RPC. Translates `blockchain.transaction.get` and `blockchain.scripthash.get_history` calls into the same `NodeAdapter` interface.
+
+Electrum identifies addresses by scripthash — `SHA256(scriptPubKey_bytes)` with the bytes reversed. The adapter converts Bitcoin addresses to their scriptPubKey using `python-bitcoinlib` before making the scripthash query. The `network` parameter (passed from `Config.node_network`) is required so that testnet/regtest address prefixes are decoded correctly.
 
 ### `kycc/graph/` — Transaction graph
 
@@ -74,7 +83,7 @@ sats = round(value * 100_000_000)  # NOT value * 1e8 (float — raises TypeError
 
 ### `kycc/fingerprint/` — Privacy heuristics
 
-`FingerprintEngine` runs all enabled detectors over a `TxNode` and attaches `Annotation` objects. Each annotation has:
+`FingerprintEngine` runs all enabled detectors over a `TxNode` and attaches `HeuristicResult` objects to `tx.annotations` via `annotate_inplace()`. Each `HeuristicResult` has:
 - `code` — machine-readable identifier (e.g. `"UIOH"`, `"ADDRESS_REUSE"`)
 - `severity` — `"info"` | `"warning"` | `"flag"`
 - `description` — human-readable explanation
@@ -84,26 +93,30 @@ See [HEURISTICS.md](HEURISTICS.md) for full detector documentation.
 
 ### `kycc/labels/` — BIP-329 label store
 
-SQLite-backed. Schema:
+SQLite-backed. The schema is applied by `labels/migrator.py` on startup. Key tables:
+
 ```sql
 CREATE TABLE labels (
-    wallet_id   TEXT NOT NULL,
-    ref_type    TEXT NOT NULL,   -- tx | utxo | addr | xpub
-    ref         TEXT NOT NULL,
-    label       TEXT NOT NULL,
-    origin      TEXT,
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    wallet_id   TEXT    NOT NULL DEFAULT 'default',
+    ref_type    TEXT    NOT NULL CHECK(ref_type IN ('tx','utxo','addr','xpub')),
+    ref         TEXT    NOT NULL,
+    label       TEXT    NOT NULL,
+    origin      TEXT    NOT NULL DEFAULT 'user',
     spendable   INTEGER,
-    created_at  INTEGER,
-    updated_at  INTEGER,
-    PRIMARY KEY (wallet_id, ref_type, ref)
+    created_at  INTEGER NOT NULL,
+    updated_at  INTEGER NOT NULL,
+    UNIQUE(wallet_id, ref_type, ref)
 );
 ```
 
-Labels are wallet-namespaced so multiple wallets can coexist without collision. `bip329.py` serialises rows to/from the JSONL format defined in BIP-329.
+Additional tables: `sessions` (graph session history), `heuristic_cache` (reserved for future use), `schema_meta` (migration version tracking).
+
+Labels are wallet-namespaced so multiple wallets can label the same UTXO independently. `bip329.py` serialises rows to/from the JSONL format defined in BIP-329. The `wallet_id` field is internal and is not written to exported files.
 
 ### `kycc/routes/` — Flask API blueprints
 
-Each route module is a separate `Blueprint` registered in `server.py`. See the [API reference in README.md](../README.md#api-reference) for the full endpoint list.
+Each route module is a separate `Blueprint` registered in `server.py`. See [FRONTEND.md](FRONTEND.md#api-client-apiclientts) for the full endpoint list.
 
 ---
 
@@ -119,11 +132,12 @@ Zustand store is the single source of truth for:
 - `hiddenHeuristics` — set of disabled heuristic keys (persisted)
 - `walletId` — current wallet context (persisted)
 - `backendOnline` — backend connectivity flag
-- `loadedTxIds`, `loadingTxIds` — prevent duplicate fetches
+- `loadedTxIds` — set of txids already in the graph; used to set the `canExpand` flag on UTXO input nodes
+- `loadingTxIds` — set of txids currently being fetched; prevents duplicate in-flight requests
 - `recentSessions` — loaded from `/api/sessions` on startup
 
 Key actions:
-- `loadRootTx(txid)` — fetches TX, builds nodes/edges, replaces graph
+- `loadRootTx(txid)` — fetches TX, builds nodes/edges, replaces the entire graph. Resets `loadedTxIds` to `{txid}` so expand buttons appear correctly on all inputs of the new root.
 - `expandInputTx(txid, vout)` — fetches parent TX, merges into existing graph
 - `clearGraph()` — resets to empty state
 
@@ -183,6 +197,5 @@ Matrix: Python 3.11 and 3.12. Integration tests (`tests/integration/`) are skipp
 
 ## Known Limitations
 
-- `loadedTxIds` in the Zustand store accumulates across root TX loads (not cleared when loading a new root). This means expand buttons may not appear on inputs whose parent TXIDs happen to match ones loaded in a previous graph. Workaround: use the Home button to clear the graph before starting a new search.
-- Address history uses `scantxoutset` (Bitcoin Core) which only finds UTXOs in the current UTXO set — it cannot find spent outputs.
-- The Electrum adapter does not implement `get_raw_transaction` for transactions not in the address history; full graph traversal requires Bitcoin Core with `txindex=1`.
+- The Electrum adapter cannot fetch a transaction by txid unless that transaction is indexed by the server (i.e. associated with a scripthash the server has seen). Full graph traversal of arbitrary on-chain transactions requires Bitcoin Core with `txindex=1`.
+- Address history via Bitcoin Core (`scantxoutset`) only finds UTXOs in the current UTXO set — spent outputs are not returned. Use an Electrum server for full address history including spent outputs.

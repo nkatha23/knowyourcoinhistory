@@ -1,0 +1,41 @@
+# KYCC — Know Your Coin History
+#
+# Quick start:
+#   1. Fill in KYCC_NODE_* below to point at your Bitcoin Core node or
+#      Electrum server (see docs/configuration.md for details).
+#   2. docker compose up -d
+#   3. open http://localhost:5050
+#
+# The SQLite label store is persisted in the `kycc-data` named volume,
+# so labels survive container restarts and image upgrades.
+
+services:
+  kycc:
+    build: .
+    image: kycc:latest
+    ports:
+      - "5050:5050"
+    volumes:
+      - kycc-data:/data
+    environment:
+      # ── Node connection ──────────────────────────────────────────────
+      # Set these to match your bitcoin.conf / Electrum server settings.
+      KYCC_NODE_TYPE: bitcoincore          # bitcoincore | electrum
+      KYCC_NODE_HOST: host.docker.internal # your node's IP or hostname
+      KYCC_NODE_PORT: "8332"               # 8332 mainnet · 18443 regtest
+      KYCC_NODE_USER: ""                   # rpcuser from bitcoin.conf
+      KYCC_NODE_PASSWORD: ""               # rpcpassword from bitcoin.conf
+      KYCC_NODE_NETWORK: mainnet           # mainnet | testnet | signet | regtest
+
+      # ── Server ──────────────────────────────────────────────────────
+      KYCC_SERVER_HOST: "0.0.0.0"
+      KYCC_SERVER_PORT: "5050"
+      KYCC_SERVER_DEBUG: "false"
+
+      # ── Database ────────────────────────────────────────────────────
+      KYCC_DB_PATH: /data/kycc.db
+
+    restart: unless-stopped
+
+volumes:
+  kycc-data:

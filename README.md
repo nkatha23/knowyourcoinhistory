@@ -2,7 +2,7 @@
 
 > A privacy-preserving Bitcoin transaction graph explorer for labeling and auditing your own coin history.
 
-Proposed by [0xB10C](https://github.com/0xB10C/project-ideas/issues/13). KYCC lets you load a transaction or UTXO, recursively trace its ancestry, attach labels, detect wallet fingerprinting heuristics, and export everything in the [BIP-329](https://github.com/bitcoin/bips/blob/master/bip-0329.mediawiki) wallet label standard — all against your own local Bitcoin Core node or Electrum server. No third-party APIs. No telemetry.
+ KYCC lets you load a transaction or UTXO, recursively trace its ancestry, attach labels, detect wallet fingerprinting heuristics, and export everything in the [BIP-329](https://github.com/bitcoin/bips/blob/master/bip-0329.mediawiki) wallet label standard — all against your own local Bitcoin Core node or Electrum server. No third-party APIs. No telemetry.
 
 ---
 
@@ -57,7 +57,20 @@ Full architecture and engineering spec: [`docs/`](./docs/)
 
 ---
 
-## Quickstart
+## Docker Quickstart
+
+No Python or Node.js install required. Edit the env vars in `docker-compose.yml` to point at your node, then:
+
+```bash
+docker compose up -d
+# open http://localhost:5050
+```
+
+Labels are persisted in a named Docker volume (`kycc-data`). See `docker-compose.yml` for the full list of `KYCC_*` environment variables.
+
+---
+
+## Dev Quickstart
 
 ### 1. Clone and enter the repo
 ```bash
@@ -69,7 +82,7 @@ cd knowyourcoinhistory
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install flask python-bitcoinrpc python-bitcoinlib pytest pytest-cov black ruff mypy
+pip install -r requirements.txt
 ```
 
 ### 3. Configure your node connection
@@ -199,6 +212,8 @@ docker-compose.regtest.yml  Bitcoin Core v28 regtest node
 - [x] Phase 5 — React + React Flow interactive graph UI
 - [x] Phase 5+ — Frontend redesign: hero landing page, floating search, node typography, edge value labels
 - [x] Bug fixes — BitcoinCoreAdapter stale connection (`CannotSendRequest`), `decimal.Decimal` × float TypeError in parser
+- [x] Bug fixes — `blockheight` null for confirmed transactions (resolved via `getblockheader`), Electrum scripthash computed from address string instead of scriptPubKey, `loadedTxIds` accumulation across root TX loads
+- [x] Docker support — multi-stage build, env var config, named volume for label persistence
 - [ ] Phase 6 — Signet public demo
 
 ---
