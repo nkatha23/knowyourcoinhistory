@@ -232,5 +232,5 @@ MIT
 
 ## Acknowledgements
 
-- [0xB10C](https://github.com/0xB10C) for the original project idea and specification
-- [Coin Smith](https://github.com/nkatha23/coin-smith) — PSBT/UTXO logic this project descends from
+- [0xB10C](https://github.com/0xB10C/project-ideas/issues/13) for the original project idea and specification
+

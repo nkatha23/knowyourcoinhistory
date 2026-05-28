@@ -1,0 +1,48 @@
+# kycc.toml.example — copy to kycc.toml and fill in your values.
+#
+# This file is OPTIONAL. Every setting here can also be supplied as an
+# environment variable, which is the recommended approach for Docker.
+# Priority: env var > kycc.toml > built-in default.
+#
+# Docker users: edit the KYCC_* vars in docker-compose.yml instead.
+# Local dev users: cp kycc.toml.example kycc.toml, then edit below.
+#
+# kycc.toml is gitignored so secrets never land in version control.
+
+# ── Node connection ──────────────────────────────────────────────────────────
+
+[node]
+# type: bitcoincore | electrum
+type     = "bitcoincore"
+
+# Bitcoin Core / Electrum server hostname or IP
+host     = "127.0.0.1"
+
+# Bitcoin Core default ports: 8332 (mainnet), 18332 (testnet), 18443 (regtest)
+# Electrum default ports:     50001 (TCP plaintext), 50002 (SSL)
+port     = 8332
+
+# Bitcoin Core RPC credentials — leave blank to use cookie auth instead.
+user     = ""
+password = ""
+
+# Cookie-file auth (preferred for local Bitcoin Core; mutually exclusive with
+# user/password). Set to the path of your .cookie file.
+# cookie_file = "/home/YOU/.bitcoin/.cookie"
+
+# Network: mainnet | testnet | signet | regtest
+network  = "mainnet"
+
+# ── Flask server ─────────────────────────────────────────────────────────────
+
+[server]
+host  = "127.0.0.1"   # bind address — use 0.0.0.0 to expose on the network
+port  = 5050
+debug = false          # set true for auto-reload during development
+
+# ── SQLite label store ───────────────────────────────────────────────────────
+
+[db]
+# Path is relative to the directory where you run main.py.
+# Docker sets this to /data/kycc.db via KYCC_DB_PATH.
+path = "kycc.db"

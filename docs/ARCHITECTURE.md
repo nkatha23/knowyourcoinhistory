@@ -32,7 +32,7 @@ Key fields:
 - `node_host`, `node_port`, `node_user`, `node_password`
 - `node_network` — `"mainnet"` | `"testnet"` | `"signet"` | `"regtest"`
 - `server_host`, `server_port`, `server_debug`
-- `db_path` — SQLite file path for the label store (defaults to `/data/kycc.db` for Docker)
+- `db_path` — SQLite file path for the label store (defaults to `kycc.db`; Docker sets `KYCC_DB_PATH=/data/kycc.db` via `docker-compose.yml`)
 
 Env var names: `KYCC_NODE_TYPE`, `KYCC_NODE_HOST`, `KYCC_NODE_PORT`, `KYCC_NODE_USER`, `KYCC_NODE_PASSWORD`, `KYCC_NODE_NETWORK`, `KYCC_SERVER_HOST`, `KYCC_SERVER_PORT`, `KYCC_SERVER_DEBUG`, `KYCC_DB_PATH`.
 

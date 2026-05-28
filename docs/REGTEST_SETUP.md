@@ -39,7 +39,7 @@ docker compose -f docker-compose.regtest.yml ps
 
 ## 2. Configure KYCC
 
-Copy the example config and point it at the regtest node:
+**Option A — toml file (recommended for local dev):**
 
 ```bash
 cp kycc.toml.example kycc.toml
@@ -63,6 +63,18 @@ debug = true
 
 [db]
 path = "kycc.db"
+```
+
+**Option B — env vars (no file needed):**
+
+```bash
+export KYCC_NODE_TYPE=bitcoincore
+export KYCC_NODE_HOST=127.0.0.1
+export KYCC_NODE_PORT=18443
+export KYCC_NODE_USER=kycc
+export KYCC_NODE_PASSWORD=kyccpass
+export KYCC_NODE_NETWORK=regtest
+export KYCC_SERVER_DEBUG=true
 ```
 
 ---

@@ -6,7 +6,7 @@ KYCC supports Electrum servers (Fulcrum, electrs, ElectrumX) as an alternative t
 
 ## Configuration
 
-Edit `kycc.toml`:
+**Option A — `kycc.toml`:**
 
 ```toml
 [node]
@@ -14,6 +14,15 @@ type    = "electrum"
 host    = "127.0.0.1"
 port    = 50001          # TCP plaintext; use 50002 for SSL
 network = "mainnet"      # mainnet | testnet | signet | regtest
+```
+
+**Option B — env vars (Docker or no-file preference):**
+
+```bash
+export KYCC_NODE_TYPE=electrum
+export KYCC_NODE_HOST=127.0.0.1
+export KYCC_NODE_PORT=50001
+export KYCC_NODE_NETWORK=mainnet
 ```
 
 No `user` or `password` fields are needed for Electrum (most public/local servers are unauthenticated).

@@ -21,10 +21,10 @@ services:
       # ── Node connection ──────────────────────────────────────────────
       # Set these to match your bitcoin.conf / Electrum server settings.
       KYCC_NODE_TYPE: bitcoincore          # bitcoincore | electrum
-      KYCC_NODE_HOST: host.docker.internal # your node's IP or hostname
-      KYCC_NODE_PORT: "8332"               # 8332 mainnet · 18443 regtest
-      KYCC_NODE_USER: ""                   # rpcuser from bitcoin.conf
-      KYCC_NODE_PASSWORD: ""               # rpcpassword from bitcoin.conf
+      KYCC_NODE_HOST: ""        # your node's IP or hostname
+      KYCC_NODE_PORT: "8332"              # 8332 mainnet · 18443 regtest
+      KYCC_NODE_USER: ""               # rpcuser from bitcoin.conf
+      KYCC_NODE_PASSWORD: ""       # rpcpassword from bitcoin.conf
       KYCC_NODE_NETWORK: mainnet           # mainnet | testnet | signet | regtest
 
       # ── Server ──────────────────────────────────────────────────────

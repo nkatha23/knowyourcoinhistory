@@ -35,4 +35,4 @@ VOLUME ["/data"]
 
 EXPOSE 5050
 
-CMD ["python", "main.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5050", "--workers", "2", "kycc.server:create_app()"]
