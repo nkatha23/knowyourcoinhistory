@@ -59,14 +59,65 @@ Full architecture and engineering spec: [`docs/`](./docs/)
 
 ## Docker Quickstart
 
-No Python or Node.js install required. Edit the env vars in `docker-compose.yml` to point at your node, then:
+No Python or Node.js install required. KYCC is a frontend — it needs a Bitcoin node to query. Start one first, then start KYCC.
+
+### Step 1 — Start a Bitcoin node
+
+**Regtest (recommended for development and testing — no real funds):**
+
+```bash
+docker compose -f docker-compose.regtest.yml up -d
+# Bitcoin Core v28 on localhost:18443, credentials kycc/kyccpass, txindex=1
+```
+
+Confirm it is healthy before continuing:
+
+```bash
+docker compose -f docker-compose.regtest.yml ps
+# bitcoind   running (healthy)
+```
+
+**Mainnet (your own synced Bitcoin Core node):**
+
+Your `~/.bitcoin/bitcoin.conf` must have:
+
+```ini
+server=1
+txindex=1
+rpcuser=youruser
+rpcpassword=yourpassword
+rpcallowip=127.0.0.1
+rpcallowip=172.16.0.0/12   # Docker bridge subnet
+rpcbind=0.0.0.0
+```
+
+If you just added `txindex=1` to an existing node, reindex before continuing:
+
+```bash
+bitcoind -reindex -daemon
+# wait for reindex to complete — can take hours on mainnet
+```
+
+### Step 2 — Configure and start KYCC
+
+Edit the `KYCC_NODE_*` env vars in `docker-compose.yml` to match your node:
+
+| Setting | Regtest | Mainnet |
+|---|---|---|
+| `KYCC_NODE_HOST` | `127.0.0.1` | your node's IP |
+| `KYCC_NODE_PORT` | `18443` | `8332` |
+| `KYCC_NODE_USER` | `kycc` | your rpcuser |
+| `KYCC_NODE_PASSWORD` | `kyccpass` | your rpcpassword |
+| `KYCC_NODE_NETWORK` | `regtest` | `mainnet` |
+
+Then:
 
 ```bash
 docker compose up -d
 # open http://localhost:5050
 ```
 
-Labels are persisted in a named Docker volume (`kycc-data`). See `docker-compose.yml` for the full list of `KYCC_*` environment variables.
+Labels are persisted in a named Docker volume (`kycc-data`) and survive container restarts and image upgrades.
 
 ---
 
