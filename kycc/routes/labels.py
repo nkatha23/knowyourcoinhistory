@@ -38,7 +38,7 @@ def upsert_label():
     wallet_id = data.get("wallet_id", "default").strip()
     spendable = data.get("spendable")
 
-    if ref_type not in ("tx", "utxo", "addr", "xpub"):
+    if ref_type not in ("tx", "output", "input", "addr", "pubkey", "xpub", "spscan"):
         return jsonify({"ok": False, "error": f"Invalid ref_type '{ref_type}'"}), 400
     if not ref:
         return jsonify({"ok": False, "error": "ref is required"}), 400

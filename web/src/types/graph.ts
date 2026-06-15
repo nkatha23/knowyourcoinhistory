@@ -10,7 +10,7 @@ export type ScriptType =
   | 'unknown';
 
 export type Severity = 'info' | 'warning' | 'flag';
-export type RefType = 'tx' | 'utxo' | 'addr' | 'xpub';
+export type RefType = 'tx' | 'output' | 'input' | 'addr' | 'pubkey' | 'xpub' | 'spscan';
 
 export interface Annotation {
   code: string;

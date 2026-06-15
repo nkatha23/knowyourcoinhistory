@@ -44,7 +44,7 @@ export default function RightPanel() {
   const utxoData = !isTx && data ? (data as UTXONodeData) : null;
 
   const identifier = txData?.txid ?? (utxoData ? `${utxoData.txid}:${utxoData.vout}` : '');
-  const refType = isTx ? 'tx' : 'utxo';
+  const refType = isTx ? 'tx' : 'output';
 
   const handleSave = useCallback(async () => {
     if (!selectedId) return;

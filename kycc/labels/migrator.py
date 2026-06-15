@@ -33,7 +33,33 @@ MIGRATIONS = [
     CREATE TABLE IF NOT EXISTS schema_meta (
         version     INTEGER PRIMARY KEY
     );
+    """,
+    # version 2 — rename utxo→output to match BIP-329 spec; expand valid types
     """
+    CREATE TABLE IF NOT EXISTS labels_new (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        wallet_id   TEXT    NOT NULL DEFAULT 'default',
+        ref_type    TEXT    NOT NULL CHECK(ref_type IN (
+            'tx','output','input','addr','pubkey','xpub','spscan'
+        )),
+        ref         TEXT    NOT NULL,
+        label       TEXT    NOT NULL,
+        origin      TEXT    NOT NULL DEFAULT 'user',
+        spendable   INTEGER,
+        created_at  INTEGER NOT NULL,
+        updated_at  INTEGER NOT NULL,
+        UNIQUE(wallet_id, ref_type, ref)
+    );
+    INSERT INTO labels_new (
+        id, wallet_id, ref_type, ref, label, origin, spendable, created_at, updated_at
+    )
+        SELECT id, wallet_id,
+               CASE WHEN ref_type = 'utxo' THEN 'output' ELSE ref_type END,
+               ref, label, origin, spendable, created_at, updated_at
+        FROM labels;
+    DROP TABLE labels;
+    ALTER TABLE labels_new RENAME TO labels;
+    """,
 ]
 
 
