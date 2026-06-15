@@ -248,10 +248,11 @@ def test_import_then_tx_has_label(client):
 
 
 #  address search route test coverage
-#  regtest prefix & placeholder 
-MOCK_ADDRESS = "bcrt1q" + "a" * 39   
-# mainnet prefix& placeholder 
+#  regtest prefix & placeholder
+MOCK_ADDRESS = "bcrt1q" + "a" * 39
+# mainnet prefix& placeholder
 MAINNET_ADDRESS = "bc1q" + "a" * 39
+
 
 def test_get_address_valid_returns_history(client):
     adapter = client.application.config["NODE_ADAPTER"]
