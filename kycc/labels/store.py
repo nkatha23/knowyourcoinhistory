@@ -8,7 +8,7 @@ from typing import Generator, Literal, Optional
 
 from kycc.labels.migrator import migrate
 
-RefType = Literal["tx", "utxo", "addr", "xpub"]
+RefType = Literal["tx", "output", "input", "addr", "pubkey", "xpub", "spscan"]
 
 
 @dataclass
@@ -133,7 +133,7 @@ class LabelStore:
     def hydrate_utxo(
         self, txid: str, vout: int, wallet_id: str = "default"
     ) -> Optional[str]:
-        result = self.get("utxo", f"{txid}:{vout}", wallet_id)
+        result = self.get("output", f"{txid}:{vout}", wallet_id)
         return result.label if result else None
 
 

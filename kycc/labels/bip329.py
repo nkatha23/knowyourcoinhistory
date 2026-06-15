@@ -9,7 +9,7 @@ import time
 
 from kycc.labels.store import Label, LabelStore
 
-VALID_TYPES: set[str] = {"tx", "utxo", "addr", "xpub"}
+VALID_TYPES: set[str] = {"tx", "output", "input", "addr", "pubkey", "xpub", "spscan"}
 
 
 def serialize(store: LabelStore, wallet_id: str = "default") -> str:

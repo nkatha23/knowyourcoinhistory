@@ -80,7 +80,7 @@ def test_hydrate_tx():
 def test_hydrate_utxo():
     store, _ = make_store()
     store.upsert(
-        Label(wallet_id="default", ref_type="utxo", ref="a" * 64 + ":0", label="dust")
+        Label(wallet_id="default", ref_type="output", ref="a" * 64 + ":0", label="dust")
     )
     assert store.hydrate_utxo("a" * 64, 0) == "dust"
     assert store.hydrate_utxo("a" * 64, 1) is None
