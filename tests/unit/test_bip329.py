@@ -12,10 +12,10 @@ def make_store():
 
 SAMPLE_JSONL = "\n".join(
     [
-        '{"type":"tx",   "ref":"' + "a" * 64 + '", "label":"Exchange withdrawal"}',
-        '{"type":"utxo", "ref":"' + "b" * 64 + ':0", "label":"KYC tainted"}',
-        '{"type":"addr", "ref":"bc1qtest", "label":"Cold storage"}',
-        '{"type":"xpub", "ref":"xpubTEST", "label":"Ledger"}',
+        '{"type":"tx",     "ref":"' + "a" * 64 + '", "label":"Exchange withdrawal"}',
+        '{"type":"output", "ref":"' + "b" * 64 + ':0", "label":"KYC tainted"}',
+        '{"type":"addr",   "ref":"bc1qtest", "label":"Cold storage"}',
+        '{"type":"xpub",   "ref":"xpubTEST", "label":"Ledger"}',
     ]
 )
 
@@ -24,7 +24,7 @@ def test_deserialize_all_ref_types():
     labels = deserialize(SAMPLE_JSONL)
     assert len(labels) == 4
     types = {lbl.ref_type for lbl in labels}
-    assert types == {"tx", "utxo", "addr", "xpub"}
+    assert types == {"tx", "output", "addr", "xpub"}
 
 
 def test_deserialize_sets_wallet_id():
@@ -89,7 +89,7 @@ def test_empty_lines_ignored():
 
 def test_spendable_field_preserved():
     jsonl = (
-        '{"type":"utxo","ref":"' + "a" * 64 + ':0","label":"test","spendable":false}'
+        '{"type":"output","ref":"' + "a" * 64 + ':0","label":"test","spendable":false}'
     )
     labels = deserialize(jsonl)
     assert labels[0].spendable is False
