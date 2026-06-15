@@ -2,12 +2,30 @@ from flask import Blueprint, current_app, jsonify, request
 
 bp = Blueprint("address", __name__)
 
+_BECH32_HRP = {
+    "mainnet": "bc",
+    "testnet": "tb",
+    "signet": "tb",
+    "regtest": "bcrt",
+}
+
 
 @bp.get("/api/address")
 def get_address_history():
     address = request.args.get("address", "").strip()
     if not address:
         return jsonify({"ok": False, "error": "address is required"}), 400
+
+    
+    network = current_app.config["KYCC_CONFIG"].node_network
+    expected_hrp = _BECH32_HRP.get(network, "bc")
+    lower = address.lower()
+    if any(lower.startswith(f"{hrp}1") for hrp in _BECH32_HRP.values()):
+        if not lower.startswith(f"{expected_hrp}1"):
+            return jsonify({
+                "ok": False,
+                "error": f"address does not match configured network ({network})",
+            }), 400
 
     adapter = current_app.config["NODE_ADAPTER"]
     store = current_app.config["LABEL_STORE"]

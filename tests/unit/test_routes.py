@@ -51,7 +51,7 @@ MOCK_RAW_TX = {
 }
 
 
-def _make_test_app():
+def _make_test_app(network: str = "regtest"):
     from dataclasses import dataclass
 
     @dataclass
@@ -59,7 +59,7 @@ def _make_test_app():
         node_type: str = "bitcoincore"
         node_host: str = "127.0.0.1"
         node_port: int = 8332
-        node_network: str = "regtest"
+        node_network: str = network
 
     app = Flask(__name__)
     app.config["TESTING"] = True
@@ -245,3 +245,117 @@ def test_import_then_tx_has_label(client):
     res = client.get(f"/api/tx?txid={MOCK_TXID}")
     tx = res.get_json()["tx"]
     assert tx["label"] == "from sparrow"
+
+
+#  address search route test coverage
+#  regtest prefix & placeholder 
+MOCK_ADDRESS = "bcrt1q" + "a" * 39   
+# mainnet prefix& placeholder 
+MAINNET_ADDRESS = "bc1q" + "a" * 39
+
+def test_get_address_valid_returns_history(client):
+    adapter = client.application.config["NODE_ADAPTER"]
+    adapter.get_address_history.return_value = [
+        {"tx_hash": "a" * 64, "height": 800_000},
+        {"tx_hash": "b" * 64, "height": 800_001},
+    ]
+    res = client.get(f"/api/address?address={MOCK_ADDRESS}")
+    data = res.get_json()
+    assert res.status_code == 200
+    assert data["ok"] is True
+    assert data["address"] == MOCK_ADDRESS
+    assert data["count"] == 2
+    assert data["history"][0]["tx_hash"] == "a" * 64
+
+
+def test_get_address_unknown_returns_empty_list(client):
+    adapter = client.application.config["NODE_ADAPTER"]
+    adapter.get_address_history.return_value = []
+    res = client.get(f"/api/address?address={MOCK_ADDRESS}")
+    data = res.get_json()
+    assert res.status_code == 200
+    assert data["ok"] is True
+    assert data["count"] == 0
+    assert data["history"] == []
+
+
+def test_get_address_missing_param_returns_400(client):
+    res = client.get("/api/address")
+    data = res.get_json()
+    assert res.status_code == 400
+    assert data["ok"] is False
+
+
+def test_get_address_adapter_error_returns_502(client):
+    adapter = client.application.config["NODE_ADAPTER"]
+    adapter.get_address_history.side_effect = RuntimeError("node unreachable")
+    res = client.get(f"/api/address?address={MOCK_ADDRESS}")
+    data = res.get_json()
+    assert res.status_code == 502
+    assert data["ok"] is False
+
+
+def test_get_address_wrong_network_returns_400(client):
+    # app is configured for regtest; a bc1q (mainnet) address must be rejected
+    res = client.get(f"/api/address?address={MAINNET_ADDRESS}")
+    data = res.get_json()
+    assert res.status_code == 400
+    assert data["ok"] is False
+
+
+TESTNET_ADDRESS = "tb1q" + "a" * 39  # testnet/signet prefix, placeholder data
+
+
+def test_get_address_testnet_address_accepted_on_testnet():
+    app = _make_test_app(network="testnet")
+    app.config["NODE_ADAPTER"].get_address_history.return_value = []
+    with app.test_client() as c:
+        res = c.get(f"/api/address?address={TESTNET_ADDRESS}")
+    assert res.status_code == 200
+    assert res.get_json()["ok"] is True
+
+
+def test_get_address_signet_address_accepted_on_signet():
+    # signet shares the tb1 HRP with testnet
+    app = _make_test_app(network="signet")
+    app.config["NODE_ADAPTER"].get_address_history.return_value = []
+    with app.test_client() as c:
+        res = c.get(f"/api/address?address={TESTNET_ADDRESS}")
+    assert res.status_code == 200
+    assert res.get_json()["ok"] is True
+
+
+def test_get_address_testnet_address_rejected_on_regtest(client):
+    res = client.get(f"/api/address?address={TESTNET_ADDRESS}")
+    data = res.get_json()
+    assert res.status_code == 400
+    assert data["ok"] is False
+
+
+def test_get_address_testnet_address_rejected_on_mainnet():
+    app = _make_test_app(network="mainnet")
+    with app.test_client() as c:
+        res = c.get(f"/api/address?address={TESTNET_ADDRESS}")
+    data = res.get_json()
+    assert res.status_code == 400
+    assert data["ok"] is False
+
+
+# ── _address_to_scripthash (ElectrumAdapter) ─────────────────────────────────
+# BIP-173 canonical mainnet P2WPKH test vector — checksummed, known-good.
+_BIP173_MAINNET = "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+
+
+def test_address_to_scripthash_wrong_network_raises():
+    from kycc.adapters.electrum import _address_to_scripthash
+
+    with pytest.raises(Exception):
+        _address_to_scripthash(_BIP173_MAINNET, "regtest")
+
+
+def test_address_to_scripthash_mainnet_returns_hex():
+    from kycc.adapters.electrum import _address_to_scripthash
+
+    result = _address_to_scripthash(_BIP173_MAINNET, "mainnet")
+    assert len(result) == 64
+    assert all(c in "0123456789abcdef" for c in result)
