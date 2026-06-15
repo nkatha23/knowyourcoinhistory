@@ -213,7 +213,18 @@ export const useGraphStore = create<AppStore>((set, get) => ({
       return { loadingTxIds: next };
     });
 
-    const tx = await fetchTx(txid).then((r) => r.tx);
+    let tx: TxData;
+    try {
+      tx = await fetchTx(txid).then((r) => r.tx);
+    } catch (err) {
+      set((s) => {
+        const loading = new Set(s.loadingTxIds);
+        loading.delete(txid);
+        return { backendOnline: false, loadingTxIds: loading };
+      });
+      throw err;
+    }
+
     const { nodes: newNodes, edges: newEdges } = buildNodes(
       tx,
       { x: CANVAS_CX, y: CANVAS_CY },
@@ -249,7 +260,25 @@ export const useGraphStore = create<AppStore>((set, get) => ({
       ),
     }));
 
-    const tx = await fetchTx(inputTxid).then((r) => r.tx);
+    let tx: TxData;
+    try {
+      tx = await fetchTx(inputTxid).then((r) => r.tx);
+    } catch (err) {
+      set((s) => {
+        const loading = new Set(s.loadingTxIds);
+        loading.delete(inputTxid);
+        return {
+          backendOnline: false,
+          loadingTxIds: loading,
+          nodes: s.nodes.map((n) =>
+            n.id === utxoNodeId(inputTxid, inputVout)
+              ? { ...n, data: { ...n.data, parentTxLoading: false } as AppNodeData }
+              : n,
+          ),
+        };
+      });
+      throw err;
+    }
 
     const existingUtxo = nodes.find((n) => n.id === utxoNodeId(inputTxid, inputVout));
     const utxoX = existingUtxo?.position.x ?? CANVAS_CX - UTXO_OFFSET;

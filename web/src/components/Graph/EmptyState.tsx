@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { fetchAddressHistory } from '../../api/client';
 import { useGraphStore } from '../../store/graph';
 import type { SessionData } from '../../types/graph';
+import NodeOfflineBanner from './NodeOfflineBanner';
 
 const TXID_RE = /^[0-9a-fA-F]{64}$/;
 const ADDR_RE = /^(1|3|bc1|tb1|bcrt1)/i;
@@ -49,6 +50,7 @@ interface Props {
   onLoadTxid: (txid: string) => Promise<void>;
   recentSessions: SessionData[];
   backendOnline: boolean;
+  onOpenSettings: () => void;
 }
 
 function fmtDate(ts: number) {
@@ -57,7 +59,7 @@ function fmtDate(ts: number) {
   });
 }
 
-export default function EmptyState({ onLoadTxid, recentSessions, backendOnline }: Props) {
+export default function EmptyState({ onLoadTxid, recentSessions, backendOnline, onOpenSettings }: Props) {
   const walletId = useGraphStore((s) => s.walletId);
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
@@ -131,6 +133,13 @@ export default function EmptyState({ onLoadTxid, recentSessions, backendOnline }
         >
           Enter a Bitcoin transaction ID or address to visualise inputs, outputs, and privacy fingerprints
         </p>
+
+        {/* Offline warning */}
+        {!backendOnline && (
+          <div className="mb-8 text-left mx-auto" style={{ maxWidth: 600 }}>
+            <NodeOfflineBanner onOpenSettings={onOpenSettings} />
+          </div>
+        )}
 
         {/* Search box */}
         <form
