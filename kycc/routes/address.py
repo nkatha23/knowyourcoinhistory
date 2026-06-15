@@ -25,7 +25,9 @@ def get_address_history():
                 jsonify(
                     {
                         "ok": False,
-                        "error": f"address does not match configured network ({network})",
+                        "error": (
+                            f"address does not match configured network ({network})"
+                        ),
                     }
                 ),
                 400,
