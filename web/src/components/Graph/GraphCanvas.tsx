@@ -22,13 +22,18 @@ import TransactionNode from './TransactionNode';
 import UTXONode from './UTXONode';
 import EmptyState from './EmptyState';
 import FloatingSearch from './FloatingSearch';
+import NodeOfflineBanner from './NodeOfflineBanner';
 
 const nodeTypes: NodeTypes = {
   txNode: TransactionNode,
   utxoNode: UTXONode,
 };
 
-export default function GraphCanvas() {
+interface Props {
+  onOpenSettings: () => void;
+}
+
+export default function GraphCanvas({ onOpenSettings }: Props) {
   const nodes = useGraphStore((s) => s.nodes) as unknown as Node[];
   const edges = useGraphStore((s) => s.edges) as Edge[];
   const setStoreNodes = useGraphStore((s) => s.setNodes);
@@ -99,9 +104,19 @@ export default function GraphCanvas() {
           onLoadTxid={loadRootTx}
           recentSessions={recentSessions}
           backendOnline={backendOnline}
+          onOpenSettings={onOpenSettings}
         />
       ) : (
-        <FloatingSearch />
+        <>
+          <FloatingSearch />
+          {!backendOnline && (
+            <div className="absolute top-[68px] left-1/2 -translate-x-1/2 z-10 w-full max-w-lg px-4 pointer-events-none">
+              <div className="pointer-events-auto">
+                <NodeOfflineBanner onOpenSettings={onOpenSettings} />
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

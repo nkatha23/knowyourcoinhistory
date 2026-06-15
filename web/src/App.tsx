@@ -17,8 +17,8 @@ export default function App() {
   // Probe backend on mount and load recent sessions
   useEffect(() => {
     fetchHealth()
-      .then(() => {
-        setBackendOnline(true);
+      .then((health) => {
+        setBackendOnline(health.node_online);
         return fetchSessions();
       })
       .then((r) => setRecentSessions(r.sessions))
@@ -30,7 +30,7 @@ export default function App() {
       <Toolbar onOpenSettings={() => setSettingsOpen(true)} />
 
       <div className="relative flex-1 overflow-hidden">
-        <GraphCanvas />
+        <GraphCanvas onOpenSettings={() => setSettingsOpen(true)} />
         <RightPanel />
       </div>
 
