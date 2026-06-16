@@ -61,6 +61,12 @@ Full architecture and engineering spec: [`docs/`](./docs/)
 
 No Python or Node.js install required. KYCC is a frontend — it needs a Bitcoin node to query. Start one first, then start KYCC.
 
+To run the published image directly from GitHub Container Registry:
+
+```bash
+docker run --rm -p 5050:5050 -e KYCC_NODE_HOST=host.docker.internal ghcr.io/nkatha23/knowyourcoinhistory:latest
+```
+
 ### Step 1 — Start a Bitcoin node
 
 **Regtest (recommended for development and testing — no real funds):**
@@ -284,4 +290,3 @@ MIT
 ## Acknowledgements
 
 - [0xB10C](https://github.com/0xB10C/project-ideas/issues/13) for the original project idea and specification
-
