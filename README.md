@@ -290,3 +290,27 @@ MIT
 ## Acknowledgements
 
 - [0xB10C](https://github.com/0xB10C/project-ideas/issues/13) for the original project idea and specification
+
+
+
+# ACCESSING THE PUBLISHED DOCKER IMAGE
+
+1. Access the packages page via: https://github.com/nkatha23/knowyourcoinhistory/pkgs/container/knowyourcoinhistory
+* The image should be available as : `ghcr.io/nkatha23/knowyourcoinhistory:latest`
+
+2. Pull it locally
+   `docker pull ghcr.io/nkatha23/knowyourcoinhistory:latest`
+
+3. Run it
+If your bitcoin node is running on your host machine:
+
+      docker run --rm -p 5050:5050 \
+        -e KYCC_NODE_HOST=host.docker.internal \
+        -e KYCC_NODE_PORT=18443 \
+        -e KYCC_NODE_USER=kycc \
+        -e KYCC_NODE_PASSWORD=kyccpass \
+        -e KYCC_NODE_NETWORK=regtest \
+        ghcr.io/nkatha23/knowyourcoinhistory:latest
+
+The open: http://localhost:5050
+

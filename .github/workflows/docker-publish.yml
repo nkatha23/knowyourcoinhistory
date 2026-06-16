@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/issue-17/publish-docker-image-to-github-container-registry
     tags:
       - "v*"
 
@@ -39,7 +38,6 @@ jobs:
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=ref,event=tag
-            type=ref,event=branch
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
