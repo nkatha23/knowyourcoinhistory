@@ -37,8 +37,8 @@ jobs:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha
             type=ref,event=tag
-            type=sha,event=tag
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
