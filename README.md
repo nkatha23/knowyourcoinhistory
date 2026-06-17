@@ -147,6 +147,8 @@ If your bitcoin node is running on your host machine:
 
 The open: http://localhost:5050
 
+*NB* : host.docker.internal doesn't work on Linux
+
 ---
 
 ## Dev Quickstart
