@@ -61,6 +61,12 @@ Full architecture and engineering spec: [`docs/`](./docs/)
 
 No Python or Node.js install required. KYCC is a frontend — it needs a Bitcoin node to query. Start one first, then start KYCC.
 
+To run the published image directly from GitHub Container Registry:
+
+```bash
+docker run --rm -p 5050:5050 -e KYCC_NODE_HOST=host.docker.internal ghcr.io/nkatha23/knowyourcoinhistory:latest
+```
+
 ### Step 1 — Start a Bitcoin node
 
 **Regtest (recommended for development and testing — no real funds):**
@@ -118,6 +124,30 @@ docker compose up -d
 ```
 
 Labels are persisted in a named Docker volume (`kycc-data`) and survive container restarts and image upgrades.
+
+
+### ACCESSING THE PUBLISHED DOCKER IMAGE
+
+1. Access the packages page via: https://github.com/nkatha23/knowyourcoinhistory/pkgs/container/knowyourcoinhistory
+* The image should be available as : `ghcr.io/nkatha23/knowyourcoinhistory:latest`
+
+2. Pull it locally
+   `docker pull ghcr.io/nkatha23/knowyourcoinhistory:latest`
+
+3. Run it
+If your bitcoin node is running on your host machine:
+
+      docker run --rm -p 5050:5050 \
+        -e KYCC_NODE_HOST=host.docker.internal \
+        -e KYCC_NODE_PORT=18443 \
+        -e KYCC_NODE_USER=kycc \
+        -e KYCC_NODE_PASSWORD=kyccpass \
+        -e KYCC_NODE_NETWORK=regtest \
+        ghcr.io/nkatha23/knowyourcoinhistory:latest
+
+The open: http://localhost:5050
+
+*NB* : host.docker.internal doesn't work on Linux
 
 ---
 
